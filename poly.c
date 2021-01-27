@@ -168,12 +168,24 @@ void POLY_print(POLY* fx)
     }
 }
 
-void int2vec(OUT int* vec, OUT int* vec_size, IN int zz){ 
-
+void int2vec(OUT int* vec, OUT int* vec_size, IN int zz) { // 정수를 벡터로
+    int count = 0;
+    while (1) {
+        vec[count] = zz % 2;
+        zz = zz / 2;
+        if (zz == 0)
+            break;
+        count++;
+    }
+    *vec_size = count;
 }
 
-void vec2int(OUT int* zz, IN int* vec, IN int vec_size){
-
+void vec2int(OUT int* zz, IN int* vec, IN int vec_size) { // 벡터를 정수로
+    *zz = 0;
+    for (int i = 0; i < vec_size; i++)
+    {
+        *zz += vec[i] * pow(2, i);
+    }
 }
 
 void coef_modft_table(OUT int* ft_table, IN CTX* ctx){  
