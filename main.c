@@ -44,11 +44,20 @@ int main()
     //printf("\nD == %d", zero);
     
     printf("\n=========POLY===========\n");
-    POLY AA;
-    int aa[POLY_deg + 1][COEF_deg + 1] = {{1,1,1,1,1,1}, {0,0,0,0,0,1}, {1,0,1,0,1,1}, {0,1,0,1,0,1}};
-    POLY_init(&AA, POLY_deg);
-    POLY_set(&AA, aa, POLY_deg);
+    POLY AA; // 3차 poly (계수는 4차)
+    int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
+    POLY_init(&AA, 0); // init 함수 사용 시에는 항상 최고차수를 0으로 설정하기 
+    POLY_print(&AA);
 
+    printf("\nEnd\n");
+
+    POLY_set(&AA, aa, 3, 5);
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < MAX_COEF_POLY_DEGREE+1; j++)
+            printf("%d ", AA.coef[i].coef[j]);
+        printf("\n");
+    }
     POLY_print(&AA);
 
     printf("\nEnd\n");

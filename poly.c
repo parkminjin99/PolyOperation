@@ -14,41 +14,40 @@
 
 //=====================================================================
 
-void COEF_POLY_init(COEF_POLY* ft, int maxdeg){
+void COEF_POLY_init(COEF_POLY* ft, int maxdeg)
+{
     ft->coef_max_degree = maxdeg;
-    memset(ft->coef,0,MAX_COEF_POLY_DEGREE*sizeof(int));
+    memset(ft->coef,0,(MAX_COEF_POLY_DEGREE+1)*sizeof(int));
 }
 
-void COEF_POLY_set(COEF_POLY* ft, int* a, int deg){
+void POLY_init(POLY* fx, int maxdeg)
+{ 
+    fx->max_degree = maxdeg;
+    for (int i = 0; i < MAX_POLY_DEGREE + 1; i++)
+        COEF_POLY_init(&fx->coef[i],0);
+}
+
+void COEF_POLY_set(COEF_POLY* ft, int* a, int deg)
+{
     ft->coef_max_degree = deg;
     memcpy(ft->coef, a, (deg + 1)*sizeof(int));
 }
 
-void POLY_init(POLY* fx, int maxdeg){ 
-    fx->max_degree = maxdeg;
-    for (int i=0; i<= fx->max_degree; i++)
-        COEF_POLY_init(&fx->coef[i],0);
+void POLY_set(POLY* fx, int a[][MAX_COEF_POLY_DEGREE+1], int poly_deg, int coef_deg)
+{  
+    fx->max_degree = poly_deg;
+    for (int i = 0; i < poly_deg+1; i++)
+        COEF_POLY_set(&fx->coef[i], a[i], coef_deg);
 }
 
-void POLY_set(POLY* fx, int a[][COEF_deg + 1], int deg){  
-    fx->max_degree = deg;
-    for (int i = 0; i <= deg; i++)
-    {
-        COEF_POLY_init(&fx->coef[i], COEF_deg + 1);
-        COEF_POLY_set(&fx->coef[i], a[i], COEF_deg);
-        /*for(int j = 0; j < 5; j++)                     // 오로지 나를 위해 내 입맛에 따라 바꾼거니 고쳐줘 민진아 ㅎㅎㅎㅎ 감사합니다 (_ _) 꾸벅
-        {
-            fx->coef[i].coef[j]= a[i][j];
-        }*/
-    }
-}
-
-void ctx_init(CTX* ctx){
+void ctx_init(CTX* ctx)
+{
     POLY_init(&ctx->mod_gx,0);
     COEF_POLY_init(&ctx->mod_coef,0);
 }
 
-void ctx_set(CTX* ctx, int ft[m+1], int gx[t+1], int deg_ft, int deg_gx){ 
+void ctx_set(CTX* ctx, int ft[m+1], int gx[t+1], int deg_ft, int deg_gx)
+{ 
     COEF_POLY_set(&ctx->mod_coef, ft, deg_ft);
     
     ctx->mod_gx.max_degree = deg_gx;
@@ -98,7 +97,8 @@ void COEF_POLY_print(COEF_POLY* ft){
     }
 }
 
-int COEF_is_zero(COEF_POLY* ft){             // ft가 0인지 아닌지 판별하는 함수, 0이라면 '0' 출력, 아니라면 '1'출력
+int COEF_is_zero(COEF_POLY* ft) // ft가 0인지 아닌지 판별하는 함수, 0이라면 '0' 출력, 아니라면 '1'출력
+{             
     int zero = 0;                            // ft가 0이라면 마지막까지 변하지 않음
     int max_deg = ft->coef_max_degree;
     while(max_deg >= 0){                     
@@ -109,21 +109,30 @@ int COEF_is_zero(COEF_POLY* ft){             // ft가 0인지 아닌지 판별하는 함수,
         max_deg -= 1;
     }
 
-    if(zero == 0){
-        return 0;
-    }
-    else{
-        return 1;
-    }
-    
+    if(zero == 0)       return TRUE;
+    else                return FALSE;
 }
 
-void POLY_print(POLY* fx){                           
+int POLY_is_zero(POLY* fx)
+{
+    if(fx->max_degree == 0 && COEF_is_zero(&fx->coef[0]) == TRUE)   return TRUE;
+    else    return FALSE;
+}
+
+void POLY_print(POLY* fx)
+{  
+    if(POLY_is_zero(fx) == TRUE)
+    {
+        printf("0\n");
+        return;
+    }
     int first = 1;                                           // 0이 아닌 수가 처음인지 아닌지 판별하기 위한 변수
     int max_deg = fx->max_degree;
-    while(max_deg >= 0){
+    while(max_deg >= 0)
+    {
         //printf("\n %d \n", COEF_is_zero(&fx->coef[max_deg]));
-        if(COEF_is_zero(&fx->coef[max_deg]) != 0){           // 해당 수가 0이 아니라면 실행
+        if(COEF_is_zero(&fx->coef[max_deg]) != 0)
+        {           // 해당 수가 0이 아니라면 실행
             if(first == 0){                                  // 0이 아닌 수가 처음이 아니라면 '+'기호를 먼저 print함
                 printf(" + ");
             }

@@ -7,8 +7,8 @@
 #define MAX_COEF_POLY_DEGREE 2 * m + 1
 #define MAX_POLY_DEGREE 2 * t + 1
 
-#define COEF_deg 5
-#define POLY_deg 3
+#define TRUE 1
+#define FALSE 0
 
 #define IN
 #define OUT
@@ -20,12 +20,12 @@
 //==========================  ����ü ����  =================================
 typedef struct _COEF_POLY_ {  
     int coef_max_degree;  
-    int coef[MAX_COEF_POLY_DEGREE]; 
+    int coef[MAX_COEF_POLY_DEGREE+1]; 
 } COEF_POLY;
 
 typedef struct poly {     
    int max_degree;         
-   COEF_POLY coef[MAX_POLY_DEGREE];        
+   COEF_POLY coef[MAX_POLY_DEGREE+1];        
 }POLY;
 
 typedef struct _ctx_ {     
@@ -37,7 +37,7 @@ typedef struct _ctx_ {
 void COEF_POLY_init(COEF_POLY* ft, int maxdeg);
 void COEF_POLY_set(COEF_POLY* ft,int* a, int deg);
 void POLY_init(POLY* fx, int maxdeg);
-void POLY_set(POLY* fx, int a[][COEF_deg + 1], int deg);
+void POLY_set(POLY* fx, int a[][MAX_COEF_POLY_DEGREE+1], int poly_deg, int coef_deg);
 void ctx_init(CTX* ctx);
 void ctx_set(CTX* ctx, int ft[m+1], int gx[t+1],int deg_ft, int deg_gx);
 int COEF_is_zero(COEF_POLY* ft);
