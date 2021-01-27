@@ -61,12 +61,17 @@ void ctx_set(CTX* ctx, int ft[m+1], int gx[t+1], int deg_ft, int deg_gx)
 
 //===================================================================================
 
-void COEF_POLY_copy(COEF_POLY* dst, COEF_POLY* src){ 
-    
+void COEF_POLY_copy(COEF_POLY* dst, COEF_POLY* src)
+{  
+    dst->coef_max_degree = src->coef_max_degree;
+    memcpy(dst->coef, src->coef, (src->coef_max_degree+1)*sizeof(int));
 }
 
-void POLY_copy(OUT POLY* dst, IN POLY* src){
-
+void POLY_copy(OUT POLY* dst, IN POLY* src)
+{
+    dst->max_degree = src->max_degree;
+    for (int i = 0; i < dst->max_degree+1; i++)
+        COEF_POLY_copy(&dst->coef[i], &src->coef[i]);
 }
 
 void COEF_POLY_print(COEF_POLY* ft){

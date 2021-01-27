@@ -43,14 +43,10 @@ int main()
     //zero = COEF_is_zero(&D);
     //printf("\nD == %d", zero);
     
-    printf("\n=========POLY===========\n");
-    POLY AA; // 3차 poly (계수는 4차)
+    printf("\n========= POLY set ===========\n");
+    POLY AA, AA_copy; // 3차 poly (계수는 4차)
     int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
     POLY_init(&AA, 0); // init 함수 사용 시에는 항상 최고차수를 0으로 설정하기 
-    POLY_print(&AA);
-
-    printf("\nEnd\n");
-
     POLY_set(&AA, aa, 3, 5);
     for(int i = 0; i < 4; i++)
     {
@@ -60,6 +56,10 @@ int main()
     }
     POLY_print(&AA);
 
+    printf("\n========= POLY copy ===========\n");
+    POLY_init(&AA_copy, 0);
+    POLY_copy(&AA_copy, &AA);
+    POLY_print(&AA_copy);
     printf("\nEnd\n");
     return 0;
 }
