@@ -170,6 +170,9 @@ void POLY_print(POLY* fx)
 
 void int2vec(OUT int* vec, OUT int* vec_size, IN int zz) { // 정수를 벡터로
     int count = 0;
+    
+    for(int i=0;i<m+1;i++)
+        vec[i]=0;
     while (1) {
         vec[count] = zz % 2;
         zz = zz / 2;
@@ -177,7 +180,7 @@ void int2vec(OUT int* vec, OUT int* vec_size, IN int zz) { // 정수를 벡터로
             break;
         count++;
     }
-    *vec_size = count;
+    *vec_size = count+1;
 }
 
 void vec2int(OUT int* zz, IN int* vec, IN int vec_size) { // 벡터를 정수로
@@ -189,7 +192,62 @@ void vec2int(OUT int* zz, IN int* vec, IN int vec_size) { // 벡터를 정수로
 }
 
 void coef_modft_table(OUT int* ft_table, IN CTX* ctx){  
+    
+    if(m==12)  // (1,1,0,1,0,1,1,1,0,0,0,0,1)   
+    {
+        int tmp;
+        int vec[m+1]={0,0,0,0,0,0,0,0,0,0,0,0,1};
 
+        for(int i=0;i<m;i++)  // t^12 ~ t^22
+        {            
+            if(vec[12]==1)
+            {
+                vec[12]=0;
+                vec[0]^=1;
+                vec[1]^=1;
+                vec[3]^=1;
+                vec[5]^=1;
+                vec[6]^=1;
+                vec[7]^=1;
+            }
+            vec2int(&ft_table[i],vec,12);
+            tmp=vec[m];
+            for(int j=m-1;j>=0;j--)
+            {
+                vec[j+1]=vec[j];
+            }
+            vec[0]=tmp;
+        }
+    }
+    else  // m=13 (1,1,0,1,1,0,0,0,0,0,0,0,0,1)
+    {
+        int tmp;
+        int vec[m+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+
+        for(int i=0;i<m;i++)  // t^13 ~ t^24
+        {            
+            if(vec[13]==1)
+            {
+                vec[13]=0;
+                vec[0]^=1;
+                vec[1]^=1;
+                vec[3]^=1;
+                vec[4]^=1;
+            }
+            vec2int(&ft_table[i],vec,14);
+            printf("%d ",ft_table[i]);
+            for(int j=0;j<m+1;j++)
+                printf("%d",vec[j]);
+            printf("\n");  
+            for(int j=m-1;j>=0;j--)
+            {
+                vec[j+1]=vec[j];
+            }
+            vec[0]=0;
+        
+  
+        }
+    }
 }
 
 void coef_squ(OUT int* asqu, IN COEF_POLY* a, IN CTX* ctx){  
@@ -237,17 +295,12 @@ void POLY_ADD(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX ctx){
 }
 
 
-
-
-
-
-
-
-
-
 /*
 
-void COEF_POLY_add(COEF_POLY* ht,COEF_POLY* ft, COEF_POLY* gt)   // ???????? ?????? xor?? ???
+
+
+
+void COEF_POLY_add(COEF_POLY* ht,COEF_POLY* ft, COEF_POLY* gt)   // 계수간의 덧셈은 xor로 처리
 {
     POLY_init(ht);
     int mi ;
@@ -274,19 +327,19 @@ void COEF_POLY_mul(COEF_POLY** ht,COEF_POLY* ft, COEF_POLY* gt) {
 
 }
 
-void set_POLY_zero(IN POLY** fx){   // fx ?? 0?? ????????? ??????. 
+void set_POLY_zero(IN POLY** fx){   // fx 를 0인 다항식으로 만들기. 
 
 
 }
 
 
-void POLY_set(POLY** fx, int a[]){      // ????? ?????? ????? ??????.???????. 
+void POLY_set(POLY** fx, int a[]){      // 구조체 계수를 원하는 값으로.설정하기. 
 
 
 }
 
 
-void POLY_delete(POLY** fx) {    // ????? ????
+void POLY_delete(POLY** fx) {    // 구조체 삭제
 
 }
 
@@ -296,13 +349,13 @@ void ADDpoly(OUT POLY hx, IN POLY fx, IN POLY gx) {  // fx + gx = hx
 }
 
 
-void MULpoly(OUT POLY hx, IN POLY fx, IN POLY gx){      //?????? ????  fx * gx = hx
+void MULpoly(OUT POLY hx, IN POLY fx, IN POLY gx){      //다항식간 곱셈  fx * gx = hx
 
 }
 
 
-void gen_Ttable(OUT int* c, IN OUT int* a,IN int b, IN int mod_coef){    // T type table   a???????θ?? b???????
-    //????? ????? 8192?? ????. 
+void gen_Ttable(OUT int* c, IN OUT int* a,IN int b, IN int mod_coef){    // T type table   a개원소모두를 b제곱하는
+    //테이블 크기는 8192로 고정. 
 
 
     for(int i =0; i<pow(2,m);i++)
@@ -311,7 +364,7 @@ void gen_Ttable(OUT int* c, IN OUT int* a,IN int b, IN int mod_coef){    // T ty
         a[i]=a[i]%mod_coef;        
     }
 
-// 2mt-1 ?????? ?????? ????? ?????? 
+// 2mt-1 제곱이 빠를까 서치가 빠를까 
     for(int i=0;i<pow(2,m);i++)
     {
         if()
@@ -320,7 +373,7 @@ void gen_Ttable(OUT int* c, IN OUT int* a,IN int b, IN int mod_coef){    // T ty
 }
 
 
-void gen_Rtable(POLY fx, POLY gx) {    // R type table   a???????θ?? b???????
+void gen_Rtable(POLY fx, POLY gx) {    // R type table   a개원소모두를 b제곱하는
 
 }
 
@@ -330,7 +383,7 @@ void squX(OUT POLY hx, IN POLY fx, IN POLY gx, IN int n) {  // fx^n mod gx = hx
 }
 
 
-void MULscalar(POLY* fx,int a){    // ?????? ?????? ????.
+void MULscalar(POLY* fx,int a){    // 다항식과 상수의 곱셈.
 
     for(int i =0; i<t+1;i++)
     {
@@ -342,5 +395,4 @@ void MULscalar(POLY* fx,int a){    // ?????? ?????? ????.
 void modulo(POLY fx, POLY gx){   //fx (mod gx)
 
 }
-
 */
