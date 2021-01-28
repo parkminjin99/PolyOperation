@@ -1,9 +1,8 @@
 #include "poly.h"
 
-int main()
+void test_coef_poly()
 {
     int zero;
-    printf("Start\n");
     COEF_POLY A;
     int a[10] = {1,1,1,1,1,1,1,1,1,1};
     COEF_POLY B;
@@ -42,11 +41,14 @@ int main()
     COEF_POLY_print(&D);
     //zero = COEF_is_zero(&D);
     //printf("\nD == %d", zero);
-    
+}
+
+void test_poly()
+{
     printf("\n========= POLY set ===========\n");
-    POLY AA, AA_copy; // 3차 poly (계수는 4차)
+    POLY AA, AA_copy;
     int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
-    POLY_init(&AA, 0); // init 함수 사용 시에는 항상 최고차수를 0으로 설정하기 
+    POLY_init(&AA, 0);
     POLY_set(&AA, aa, 3, 5);
     for(int i = 0; i < 4; i++)
     {
@@ -60,6 +62,31 @@ int main()
     POLY_init(&AA_copy, 0);
     POLY_copy(&AA_copy, &AA);
     POLY_print(&AA_copy);
-    printf("\nEnd\n");
+}
+
+int main()
+{
+    test_coef_poly();
+    test_poly();
+
+    printf("\n========= Set CTX ===========\n");
+    int fttable[12];
+    CTX ctx;
+    int ft[m+1]={1,1,0,1,1,0,0,0,0,0,0,0,0,1};
+    int gx[t+1] = {0,}; //x^96+x^6+x^5+x^3+x^2+x+1   
+    gx[0]=1; gx[1]=1; gx[2]=1; gx[3]=1; gx[5]=1; gx[6]=1; gx[96]=1;
+    ctx_init(&ctx);
+    ctx_set(&ctx, ft, gx, m, t);
+    printf("print mod_gx\n");
+    POLY_print(&ctx.mod_gx);
+    printf("print mod_coef\n");
+    COEF_POLY_print(&ctx.mod_coef);
+    printf("\n");
+
+    printf("\n========= GEN Xitable ===========\n");
+    POLY Xtable[t+1];
+    gen_Xitable(Xtable, &ctx);
+    
+
     return 0;
 }

@@ -262,8 +262,15 @@ void ModExpX_i(OUT POLY* xi, IN POLY* x, IN int i, IN CTX* ctx){
 
 }
 
-void gen_Xitable(OUT int** Xtable, IN CTX* ctx){ 
-
+ vv
+{ 
+    POLY_copy(&Xtable[0],&ctx->mod_gx);
+    COEF_POLY_init(&Xtable[0].coef[96], 0);
+    POLY_print(&Xtable[0]);
+    for(int i = 1; i <= t; i++)
+    {
+         
+    }
 }
 
 void POLY_mod_gx(OUT POLY* dst, IN POLY* src, IN CTX* ctx){  

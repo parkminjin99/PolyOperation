@@ -57,7 +57,7 @@ void coef_squ(OUT int* asqu, IN COEF_POLY* a, IN CTX* ctx);
 void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN CTX* ctx );
 //--
 void ModExpX_i(OUT POLY* xi, IN POLY* x, IN int i, IN CTX* ctx);
-void gen_Xitable(OUT int** Xtable, IN CTX* ctx);
+void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx);
 //== 
 
 void POLY_mod_gx(OUT POLY* dst, IN POLY* src, IN CTX* ctx);
