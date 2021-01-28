@@ -1,8 +1,11 @@
 #ifndef poly_h
 #define poly_h
 
-#define m 12
-#define t 64
+/*  
+    (m,t) = (12,64), (13,96), (13,119), (13,128)
+*/
+#define m 13
+#define t 128
 
 #define MAX_COEF_POLY_DEGREE 2 * m + 1
 #define MAX_POLY_DEGREE 2 * t + 1
@@ -68,7 +71,9 @@ void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx);
 //--
 void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx);
 //--
-void COEF_POLY_add(COEF_POLY* ht,COEF_POLY* ft, COEF_POLY* gt, IN CTX ctx);
+void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN CTX* ctx);
+void POLY_add_zzx(OUT POLY* dst, IN POLY* src, IN CTX* ctx);
+void COEF_POLY_add(OUT COEF_POLY* dst, IN COEF_POLY* src1, IN COEF_POLY* src2, IN CTX* ctx);
 void POLY_ADD(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX ctx);
 //-- ...
 #endif

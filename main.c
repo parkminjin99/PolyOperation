@@ -64,29 +64,56 @@ void test_poly()
     POLY_print(&AA_copy);
 }
 
+void set_CTX(CTX* ctx)
+{
+    printf("\n========= Set CTX ===========\n");
+    int gx[t+1] = {0,};
+#if m == 12
+    int ft[m+1]={1,1,0,1,0,1,1,1,0,0,0,0,1};
+#elif m == 13
+    int ft[m+1]={1,1,0,1,1,0,0,0,0,0,0,0,0,1};
+#endif
+
+#if t == 64
+    // 이거 어떻게 찾지...ㅠㅠㅠㅠㅠㅠ
+#elif t == 96
+    gx[0]=1; gx[1]=1; gx[2]=1; gx[3]=1; gx[5]=1; gx[6]=1; gx[96]=1;
+#elif t == 119
+    gx[0]=1; gx[8]=1; gx[119]=1;
+#elif t == 128
+    gx[0]=1; gx[1]=1; gx[2]=1; gx[7]=1; gx[128]=1;
+#endif
+
+    ctx_init(ctx);
+    ctx_set(ctx, ft, gx, m, t);
+    printf("PRINT mod_gx\n");
+    POLY_print(&ctx->mod_gx);
+    printf("PRINT mod_coef\n");
+    COEF_POLY_print(&ctx->mod_coef);
+    printf("\n");
+}
+
+void test_gen_Xtable(POLY* Xtable, CTX* ctx)
+{
+    printf("\n========= GEN Xitable ===========\n");
+    gen_Xitable(Xtable, ctx);
+    for(int i = 0; i <= t; i++)
+    {
+        printf("[X^%d]\t\t", i+t);
+        POLY_print(&Xtable[i]);
+    }
+}
+
 int main()
 {
     test_coef_poly();
     test_poly();
 
-    printf("\n========= Set CTX ===========\n");
-    int fttable[12];
     CTX ctx;
-    int ft[m+1]={1,1,0,1,1,0,0,0,0,0,0,0,0,1};
-    int gx[t+1] = {0,}; //x^96+x^6+x^5+x^3+x^2+x+1   
-    gx[0]=1; gx[1]=1; gx[2]=1; gx[3]=1; gx[5]=1; gx[6]=1; gx[96]=1;
-    ctx_init(&ctx);
-    ctx_set(&ctx, ft, gx, m, t);
-    printf("print mod_gx\n");
-    POLY_print(&ctx.mod_gx);
-    printf("print mod_coef\n");
-    COEF_POLY_print(&ctx.mod_coef);
-    printf("\n");
+    set_CTX(&ctx);
 
-    printf("\n========= GEN Xitable ===========\n");
     POLY Xtable[t+1];
-    gen_Xitable(Xtable, &ctx);
-    
+    test_gen_Xtable(Xtable, &ctx);
 
     return 0;
 }
