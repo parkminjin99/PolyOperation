@@ -145,5 +145,31 @@ int main()
     
     test_gen_fttable(fttable, &ctx);
     test_gen_Ttable(fttable, &ctx);
+
+
+
+    COEF_POLY A;
+    int a[10] = {0,0,0,0,0,0,0,0,0,1};
+    COEF_POLY B;
+    int b[7] = {0,0,0,0,0,1,0};    
+    COEF_POLY C;
+
+    COEF_POLY_init(&A, 0); 
+    COEF_POLY_set(&A, a, 9);
+    COEF_POLY_init(&B, 0); 
+    COEF_POLY_set(&B, b, 5);
+    COEF_POLY_init(&C, 0); 
+
+    printf("\n=========COEF_POLY===========\n");
+    COEF_POLY_print(&A); printf("\n");
+    COEF_POLY_print(&B); printf("\n");
+
+    //zero = COEF_is_zero(&A);
+    COEF_POLY_mul(&C, &A, &B, fttable, &ctx) ;
+
+
+    COEF_POLY_print(&C); printf("\n");
+
+
     return 0;
 }

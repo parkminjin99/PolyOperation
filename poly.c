@@ -357,8 +357,40 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx){  //x^i
 
 }
 
-void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN CTX* ctx) {
-
+void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN int* ft_table, IN CTX* ctx) {
+    int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0, sum, deg=0;
+    int tmp[MAX_COEF_POLY_DEGREE]={0,};
+    for(int i=0;i<=ft->coef_max_degree;i++)
+    {
+        for(int j=0;j<=gt->coef_max_degree;j++)
+        {
+            vec[i+j] ^= ft->coef[i]*gt->coef[j];
+        }
+    }
+    sum=ft->coef_max_degree+gt->coef_max_degree;
+    for(int i=sum;i>=m;i--)
+    {
+        if(vec[i]==1)
+        {
+            vec[i]=0;
+            int2vec(tmp,&vec_size,ft_table[i-m]);
+            //printf(" %d ",ft_table[i-m]);
+            for(int j=0;j<=vec_size;j++)
+            {
+                vec[j]^=tmp[j];
+            }
+        }
+        //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");
+    }
+    for(int i=m-1;i>=0;i--)
+    {
+        if(vec[i]!=0)
+        {
+            deg=i;
+            break;
+        }
+    }
+    COEF_POLY_set(ht,vec,deg);
 }
 
 void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx){

@@ -66,7 +66,7 @@ void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx);
 void POLY_mod_gx(OUT POLY* dst, IN POLY* src, IN CTX* ctx);
 void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx);
 //--
-void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN CTX* ctx) ;
+void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN int* ft_table, IN CTX* ctx) ;
 void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx);
 //--
 void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx);
