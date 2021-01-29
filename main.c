@@ -75,7 +75,7 @@ void set_CTX(CTX* ctx)
 #endif
 
 #if t == 64
-    // ÀÌ°Å ¾î¶»°Ô Ã£Áö...¤Ð¤Ð¤Ð¤Ð¤Ð¤Ð
+    // ô«äÞ ?ýØêî Ó¹ñË...ªÐªÐªÐªÐªÐªÐ
 #elif t == 96
     gx[0]=1; gx[1]=1; gx[2]=1; gx[3]=1; gx[5]=1; gx[6]=1; gx[96]=1;
 #elif t == 119
@@ -104,6 +104,32 @@ void test_gen_Xtable(POLY* Xtable, CTX* ctx)
     }
 }
 
+void test_gen_fttable(int* fttable, CTX* ctx)
+{
+    printf("\n========= GEN fttable ===========\n");
+
+    coef_modft_table(fttable, ctx);
+    for(int i = 0; i <= m; i++)
+    {
+        printf("[t^%d]\t\t%d\n", i+m, fttable[i]);
+    }
+}
+
+void test_gen_Ttable(int* fttable, CTX* ctx)
+{
+    printf("\n========= GEN Ttable ===========\n");
+    int Ttable[8192]={0,};
+    int InvTtable[8192]={0,};
+    gen_Ttable(Ttable, InvTtable, fttable, ctx ); // f2mÀÇ ¸ðµç ¿ø¼Ò.
+    printf("i   ttable   invttable\n");
+    for(int i = 0; i < pow(2,m); i++)
+    {
+        printf("[%d]\t\t%d\t\t%d\n", i,Ttable[i],InvTtable[i]);  
+    }
+
+}
+
+
 int main()
 {
     test_coef_poly();
@@ -115,5 +141,9 @@ int main()
     POLY Xtable[t+1];
     test_gen_Xtable(Xtable, &ctx);
 
+    int fttable[m]={0,};
+    
+    test_gen_fttable(fttable, &ctx);
+    test_gen_Ttable(fttable, &ctx);
     return 0;
 }

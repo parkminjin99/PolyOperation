@@ -206,7 +206,6 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
     
     if(m==12)  // (1,1,0,1,0,1,1,1,0,0,0,0,1)   
     {
-        int tmp;
         int vec[m+1]={0,0,0,0,0,0,0,0,0,0,0,0,1};
 
         for(int i=0;i<m;i++)  // t^12 ~ t^22
@@ -221,18 +220,16 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
                 vec[6]^=1;
                 vec[7]^=1;
             }
-            vec2int(&ft_table[i],vec,12);
-            tmp=vec[m];
+            vec2int(&ft_table[i],vec,13);
             for(int j=m-1;j>=0;j--)
             {
                 vec[j+1]=vec[j];
             }
-            vec[0]=tmp;
+            vec[0]=0;
         }
     }
     else  // m=13 (1,1,0,1,1,0,0,0,0,0,0,0,0,1)
     {
-        int tmp;
         int vec[m+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,1};
 
         for(int i=0;i<m;i++)  // t^13 ~ t^24
@@ -246,10 +243,10 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
                 vec[4]^=1;
             }
             vec2int(&ft_table[i],vec,14);
-            printf("%d ",ft_table[i]);
-            for(int j=0;j<m+1;j++)
-                printf("%d",vec[j]);
-            printf("\n");  
+            //printf("%d ",ft_table[i]);
+            //for(int j=0;j<m+1;j++)
+            //    printf("%d",vec[j]);
+            //printf("\n");  
             for(int j=m-1;j>=0;j--)
             {
                 vec[j+1]=vec[j];
@@ -261,12 +258,53 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
     }
 }
 
-void coef_squ(OUT int* asqu, IN COEF_POLY* a, IN CTX* ctx){  
+
+void coef_squ(OUT int* asqu,IN int* ft_table, IN COEF_POLY* a, IN CTX* ctx){  
+    int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0;
+    COEF_POLY tmp;
+    COEF_POLY_init(&tmp,0);
+    //printf("\na = "); COEF_POLY_print(a); printf("\n");
+    
+    for(int i=a->coef_max_degree;i>=0;i--)
+        tmp.coef[2*i]=a->coef[i];
+
+    tmp.coef_max_degree=2*a->coef_max_degree;
+
+    //printf("a^2 = "); COEF_POLY_print(&tmp); printf("  ");
+    //printf("maxdeg= %d\n",tmp.coef_max_degree);
+
+    for(int i=tmp.coef_max_degree;i>=m;i=i-2)
+    {
+        if(tmp.coef[i]==1)
+        {
+            tmp.coef[i]=0;
+            int2vec(vec,&vec_size,ft_table[i-m]);
+            //printf(" %d ",ft_table[i-m]);
+            for(int i=0;i<=vec_size;i++)
+            {
+                tmp.coef[i]^=vec[i];
+            }
+        }
+        //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");
+        
+    }
+    //COEF_POLY_print(&tmp); printf("\n");
+    vec2int(asqu, tmp.coef, m+1);
+    //printf("int (a^2 mod g) = %d\n",*asqu);
 
 }
 
-void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN CTX* ctx ){  
-
+void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN int* ft_table, IN CTX* ctx ){  // f2m의 모든 원소.
+    int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0, dst=0;
+    COEF_POLY tmp;
+    for(int i=0;i<pow(2,m);i++)
+    {
+        int2vec(vec,&vec_size,i);
+        COEF_POLY_set(&tmp, vec, vec_size-1);
+        coef_squ(&dst,ft_table,&tmp,ctx);
+        Ttable[i]=dst;
+        InvTtable[dst]=i;
+    }
 }
 
 void ModExpX_i(OUT POLY* xi, IN POLY* x, IN int i, IN CTX* ctx){ 
