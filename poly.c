@@ -74,23 +74,27 @@ void POLY_copy(OUT POLY* dst, IN POLY* src)
         COEF_POLY_copy(&dst->coef[i], &src->coef[i]);
 }
 
-void COEF_POLY_print(COEF_POLY* ft){
+void COEF_POLY_print(COEF_POLY* ft)
+{
     int first = 1;                           // 0이 아닌 수가 처음인지 아닌지 판별하기 위한 변수
     int max_deg = ft->coef_max_degree;       // max_deg 설정
     while(max_deg >= 0){                     
         if(ft->coef[max_deg] != 0){          // 해당 수가 0이 아니라면 실행
             if(first == 0){                  // 0이 아닌 수가 처음이 아니라면 '+'기호를 먼저 print함
-                printf(" + ");
+                printf("+ ");
             }
             
             if(max_deg == 0){                // 0차의 수는 상수이므로 상수만 출력
                 printf("%d ", ft->coef[max_deg]);
             }
-            else if(max_deg == 1){           // 1차의 수는 () * t로 출력
-                printf("%d * t ", ft->coef[max_deg]);
+            else if(max_deg == 1)
+            {           // 1차의 수는 () * t로 출력
+                if(ft->coef[max_deg] == 1)      printf("t ");
+                else                            printf("%d * t ", ft->coef[max_deg]);
             }
             else{                            // n차의 수는 () * t^n로 출력 (n > 1)
-                printf("%d * t^%d ", ft->coef[max_deg], max_deg);
+                if(ft->coef[max_deg])           printf("t^%d ", max_deg);
+                else                            printf("%d * t^%d ", ft->coef[max_deg], max_deg);
             }
             first = 0;                       // 한 번이라도 if문이 실행되면 first를 0으로 변경
         }
@@ -312,25 +316,6 @@ void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN COEF_POLY* ft_table, IN 
     }
 }
 
-
-void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN CTX* ctx)
-{
-    for(int i = 0; i <= src->coef_max_degree; i++)
-    {
-        dst->coef[i] ^= src->coef[i];
-        if(dst->coef[i] != 0)   dst->coef_max_degree = i;
-    }
-}
-
-void POLY_add_zzx(OUT POLY* dst, IN POLY* src, IN CTX* ctx) // t차 이상의 다항식은 안들어온다는 가정하에 덧셈 
-{
-    for (int i = 0; i < t; i++)
-    {
-        COEF_POLY_add_zzx(&dst->coef[i], &src->coef[i], ctx);
-        if(COEF_is_zero(&dst->coef[i]) != TRUE)     dst->max_degree = i;  
-    }
-}
-
 void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx)
 { 
     POLY_copy(&Xtable[0],&ctx->mod_gx);
@@ -345,21 +330,45 @@ void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx)
                 Xtable[i].max_degree = j;
         }
         if(COEF_is_zero(&Xtable[i-1].coef[t-1]) != TRUE)
-            POLY_add_zzx(&Xtable[i], &Xtable[0], ctx);
+            POLY_add_zzx(&Xtable[i], &Xtable[0]);
     }
 }
 
-void POLY_mod_gx(OUT POLY* dst, IN POLY* src, IN CTX* ctx)
+void COEF_POLY_mod_ft(OUT IN COEF_POLY* dst, IN CTX* ctx, IN COEF_POLY fttable[])
+{
+    if(dst->coef_max_degree < m)    return;
+    int max_deg = dst->coef_max_degree;
+    for(int i = m; i<= max_deg; i++)
+    {
+        dst->coef[i] = 0;
+        COEF_POLY_add_zzx(dst, &fttable[i-m]);
+    }
+}
+
+void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[])
 {  
+    if(dst->max_degree < t)    return;
     int max_deg = dst->max_degree;
-    //for(int i = t; i <  )
+
+    COEF_POLY temp; 
+    COEF_POLY_init(&temp, 0);
+    for(int i = t; i <= max_deg; i++) 
+    {
+        for(int j = 0; j <= Xtable[i-t].max_degree; j++)
+        {
+            if(Xtable[i-t].coef[j].coef[0] != 0)
+                COEF_POLY_add_zzx(&dst->coef[j], &dst->coef[i]);
+        }
+    }
 }
 
-void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx){  //x^i
+void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx)
+{  
 
 }
 
-void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN COEF_POLY* ft_table, IN CTX* ctx) {
+void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN COEF_POLY* ft_table, IN CTX* ctx) 
+{
     int vec[MAX_COEF_POLY_DEGREE]={0,}, sum, deg=0;
     //int tmp[MAX_COEF_POLY_DEGREE]={0,};
     for(int i=0;i<=ft->coef_max_degree;i++)
@@ -395,118 +404,50 @@ void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN COEF
     COEF_POLY_set(ht,vec,deg);
 }
 
-void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx){
-
-}
-
-void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx){
-
-}
-
-
-void POLY_ADD(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX ctx){
-
-}
-
-
-/*
-
-
-
-
-void COEF_POLY_add(COEF_POLY* ht,COEF_POLY* ft, COEF_POLY* gt)   // 계수간의 덧셈은 xor로 처리
+void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx)
 {
-    POLY_init(ht);
-    int mi ;
-    mi=(ft->coef_max_degree < gt->coef_max_degree)? ft->coef_max_degree:gt->coef_max_degree;
-    int i;
-    for(i=0 ; i < mi;i++)
+
+}   
+
+void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx)
+{
+
+}
+
+void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src)
+{
+    for(int i = 0; i <= src->coef_max_degree; i++)
     {
-        (*ht)->coef[i]=ft->coef[i]^gt->coef[i];    
-    }
-    if (mi==ft->coef_max_degree)
-    {
-        for(i=mi;i<gt->coef_max_degree;i++)
-            (*ht)->coef[i]=gt->coef[i]; 
-    }
-    else
-    {
-        for(i=mi;i<ft->coef_max_degree;i++)
-            (*ht)->coef[i]=ft->coef[i]; 
+        dst->coef[i] ^= src->coef[i];
+        if(dst->coef[i] != 0)   dst->coef_max_degree = i;
     }
 }
 
-
-void COEF_POLY_mul(COEF_POLY** ht,COEF_POLY* ft, COEF_POLY* gt) {
-
-}
-
-void set_POLY_zero(IN POLY** fx){   // fx 를 0인 다항식으로 만들기. 
-
-
-}
-
-
-void POLY_set(POLY** fx, int a[]){      // 구조체 계수를 원하는 값으로.설정하기. 
-
-
-}
-
-
-void POLY_delete(POLY** fx) {    // 구조체 삭제
-
-}
-
-
-void ADDpoly(OUT POLY hx, IN POLY fx, IN POLY gx) {  // fx + gx = hx
-
-}
-
-
-void MULpoly(OUT POLY hx, IN POLY fx, IN POLY gx){      //다항식간 곱셈  fx * gx = hx
-
-}
-
-
-void gen_Ttable(OUT int* c, IN OUT int* a,IN int b, IN int mod_coef){    // T type table   a개원소모두를 b제곱하는
-    //테이블 크기는 8192로 고정. 
-
-
-    for(int i =0; i<pow(2,m);i++)
+void POLY_add_zzx(OUT POLY* dst, IN POLY* src) // t차 이상의 다항식은 안들어온다는 가정하에 덧셈 
+{
+    for (int i = 0; i < t; i++)
     {
-        a[i]=pow(a[i],b);
-        a[i]=a[i]%mod_coef;        
-    }
-
-// 2mt-1 제곱이 빠를까 서치가 빠를까 
-    for(int i=0;i<pow(2,m);i++)
-    {
-        if()
-
+        COEF_POLY_add_zzx(&dst->coef[i], &src->coef[i]);
+        if(COEF_is_zero(&dst->coef[i]) != TRUE)     dst->max_degree = i;  
     }
 }
 
-
-void gen_Rtable(POLY fx, POLY gx) {    // R type table   a개원소모두를 b제곱하는
-
-}
-
-
-void squX(OUT POLY hx, IN POLY fx, IN POLY gx, IN int n) {  // fx^n mod gx = hx
-
-}
-
-
-void MULscalar(POLY* fx,int a){    // 다항식과 상수의 곱셈.
-
-    for(int i =0; i<t+1;i++)
+void COEF_POLY_add(OUT COEF_POLY* dst, IN COEF_POLY* src1, IN COEF_POLY* src2)
+{
+    int max_deg = MAX(src1->coef_max_degree, src2->coef_max_degree);
+    for(int i = 0; i <= max_deg; i++)
     {
-        fx->coef[i]=(fx->coef[i])*(a)%(fx->mod_coef);
+        dst->coef[i] = src1->coef[i] ^ src2->coef[i];
+        if(dst->coef[i] != 0)   dst->coef_max_degree = i;
     }
 }
 
-
-void modulo(POLY fx, POLY gx){   //fx (mod gx)
-
+void POLY_add(OUT POLY* dst, IN POLY* src1, IN POLY* src2)
+{   
+    int max_deg = MAX(src1->max_degree, src2->max_degree);
+    for (int i = 0; i <= max_deg; i++)
+    {
+        COEF_POLY_add(&dst->coef[i], &src1->coef[i], &src2->coef[i]);
+        if(COEF_is_zero(&dst->coef[i]) != TRUE)     dst->max_degree = i;  
+    }
 }
-*/

@@ -132,6 +132,25 @@ void test_gen_Ttable(COEF_POLY* fttable, CTX* ctx)
 
 }
 
+void test_poly_add()
+{
+    printf("\n========= POLY_ADD ==========\n");
+    POLY AA, BB, CC;
+    int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
+    int bb[5+1][MAX_COEF_POLY_DEGREE+1] = {{1,0,1,0,1,0,1,}, {1,1,0,0,1,1,}, {1,0,0,0,1,0,}, {1,0,0,1,0,1,}, {1,0,1,1,1,1,}, {1,0,1,1,0,1,}};
+    POLY_init(&AA, 0);      POLY_init(&BB, 0);      POLY_init(&CC, 0);
+    POLY_set(&AA, aa, 3, 5);    POLY_set(&BB, bb, 5, 6);
+
+    POLY_add(&CC, &AA, &BB);   
+    printf("A = ");         POLY_print(&AA);      
+    printf("B = ");         POLY_print(&BB);      
+    printf("A + B = ");     POLY_print(&CC);    
+}
+
+void test_mod()
+{
+    
+}
 
 int main()
 {
@@ -149,6 +168,8 @@ int main()
     test_gen_fttable(fttable, &ctx);
     test_gen_Ttable(fttable, &ctx);
 
+    test_poly_add();
+    test_mod();
 
 
     COEF_POLY A;
