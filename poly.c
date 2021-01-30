@@ -427,9 +427,12 @@ void POLY_mul(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx, IN COEF_
     POLY_mod_gx(dst, ctx, Xtable);
 }   
 
-void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx)
+void MULscalar(OUT POLY* dst, IN POLY* fx, IN COEF_POLY gt, IN COEF_POLY* ft_table, IN CTX* ctx)
 {
-
+    dst->max_degree = fx->max_degree;
+    for(int i = 0; i<=fx->max_degree;i++){
+        COEF_POLY_mul(&dst->coef[i], &fx->coef[i], &gt, ft_table, ctx);
+    }
 }
 
 void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src)

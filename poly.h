@@ -44,6 +44,7 @@ void POLY_set(POLY* fx, int a[][MAX_COEF_POLY_DEGREE+1], int poly_deg, int coef_
 void ctx_init(CTX* ctx);
 void ctx_set(CTX* ctx, int ft[m+1], int gx[t+1],int deg_ft, int deg_gx);
 int COEF_is_zero(COEF_POLY* ft);
+int POLY_is_zero(POLY* fx);
 void set_POLY_degree(POLY* dst);
 
 void COEF_POLY_copy(COEF_POLY* dst, COEF_POLY* src);
@@ -69,7 +70,7 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx);     // ³ª
 void COEF_POLY_mul(OUT COEF_POLY* dst,IN COEF_POLY* src1, IN COEF_POLY* src2, IN COEF_POLY* ft_table, IN CTX* ctx); //0
 void POLY_mul(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx, IN COEF_POLY fttable[], IN POLY Xtable[]); // ³ª 
 //-- 
-void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx);  //
+void MULscalar(OUT POLY* dst, IN POLY* fx, IN COEF_POLY gt, IN COEF_POLY* ft_table, IN CTX* ctx);  //
 //--
 void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src);
 void POLY_add_zzx(OUT POLY* dst, IN POLY* src);
