@@ -202,7 +202,7 @@ void vec2int(OUT int* zz, IN int* vec, IN int vec_size) { // 벡터를 정수로
     }
 }
 
-void coef_modft_table(OUT int* ft_table, IN CTX* ctx){  
+void coef_modft_table(OUT COEF_POLY* ft_table, IN CTX* ctx){  
     
     if(m==12)  // (1,1,0,1,0,1,1,1,0,0,0,0,1)   
     {
@@ -220,7 +220,10 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
                 vec[6]^=1;
                 vec[7]^=1;
             }
-            vec2int(&ft_table[i],vec,13);
+            
+            COEF_POLY_set(&ft_table[i],vec,12);
+            //vec2int(&ft_table[i],vec,13);
+            
             for(int j=m-1;j>=0;j--)
             {
                 vec[j+1]=vec[j];
@@ -242,7 +245,10 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
                 vec[3]^=1;
                 vec[4]^=1;
             }
-            vec2int(&ft_table[i],vec,14);
+            
+            //vec2int(&ft_table[i],vec,14);
+            COEF_POLY_set(&ft_table[i],vec,13);
+
             //printf("%d ",ft_table[i]);
             //for(int j=0;j<m+1;j++)
             //    printf("%d",vec[j]);
@@ -252,15 +258,13 @@ void coef_modft_table(OUT int* ft_table, IN CTX* ctx){
                 vec[j+1]=vec[j];
             }
             vec[0]=0;
-        
-  
         }
     }
 }
 
 
-void coef_squ(OUT int* asqu,IN int* ft_table, IN COEF_POLY* a, IN CTX* ctx){  
-    int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0;
+void coef_squ(OUT int* asqu,IN COEF_POLY* ft_table, IN COEF_POLY* a, IN CTX* ctx){  
+    //int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0;
     COEF_POLY tmp;
     COEF_POLY_init(&tmp,0);
     //printf("\na = "); COEF_POLY_print(a); printf("\n");
@@ -278,11 +282,12 @@ void coef_squ(OUT int* asqu,IN int* ft_table, IN COEF_POLY* a, IN CTX* ctx){
         if(tmp.coef[i]==1)
         {
             tmp.coef[i]=0;
-            int2vec(vec,&vec_size,ft_table[i-m]);
+
+            //int2vec(vec,&vec_size,ft_table[i-m]);
             //printf(" %d ",ft_table[i-m]);
-            for(int i=0;i<=vec_size;i++)
+            for(int j=0;j<=ft_table[i-m].coef_max_degree;j++)
             {
-                tmp.coef[i]^=vec[i];
+                tmp.coef[j]^=ft_table[i-m].coef[j];
             }
         }
         //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");
@@ -294,7 +299,7 @@ void coef_squ(OUT int* asqu,IN int* ft_table, IN COEF_POLY* a, IN CTX* ctx){
 
 }
 
-void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN int* ft_table, IN CTX* ctx ){  // f2m의 모든 원소.
+void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN COEF_POLY* ft_table, IN CTX* ctx ){  // f2m의 모든 원소.
     int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0, dst=0;
     COEF_POLY tmp;
     for(int i=0;i<pow(2,m);i++)
@@ -307,9 +312,6 @@ void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN int* ft_table, IN CTX* c
     }
 }
 
-void ModExpX_i(OUT POLY* xi, IN POLY* x, IN int i, IN CTX* ctx){ 
-
-}
 
 void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN CTX* ctx)
 {
@@ -357,9 +359,9 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx){  //x^i
 
 }
 
-void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN int* ft_table, IN CTX* ctx) {
-    int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0, sum, deg=0;
-    int tmp[MAX_COEF_POLY_DEGREE]={0,};
+void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN COEF_POLY* ft_table, IN CTX* ctx) {
+    int vec[MAX_COEF_POLY_DEGREE]={0,}, sum, deg=0;
+    //int tmp[MAX_COEF_POLY_DEGREE]={0,};
     for(int i=0;i<=ft->coef_max_degree;i++)
     {
         for(int j=0;j<=gt->coef_max_degree;j++)
@@ -373,14 +375,14 @@ void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN int*
         if(vec[i]==1)
         {
             vec[i]=0;
-            int2vec(tmp,&vec_size,ft_table[i-m]);
+            //int2vec(tmp,&vec_size,ft_table[i-m]);
             //printf(" %d ",ft_table[i-m]);
-            for(int j=0;j<=vec_size;j++)
+            for(int j=0;j<=ft_table[i-m].coef_max_degree;j++)
             {
-                vec[j]^=tmp[j];
+                vec[j]^=ft_table[i-m].coef[j];
             }
         }
-        //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");
+        //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");   //?
     }
     for(int i=m-1;i>=0;i--)
     {

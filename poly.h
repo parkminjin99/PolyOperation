@@ -47,33 +47,33 @@ int COEF_is_zero(COEF_POLY* ft);
 
 void COEF_POLY_copy(COEF_POLY* dst, COEF_POLY* src);
 void POLY_copy(OUT POLY* dst, IN POLY* src);
-//--
+//-- 
 void COEF_POLY_print(COEF_POLY* ft);  //t
 void POLY_print(POLY* fx);            //X
-//--
+//-- 
 void int2vec(OUT int* vec, OUT int* vec_size, IN int zz);
 void vec2int(OUT int* zz, IN int* vec, IN int vec_size);
 //== 
 
-void coef_modft_table(OUT int* ft_table, IN CTX* ctx);
-void coef_squ(OUT int* asqu,IN int*ft_table, IN COEF_POLY* a, IN CTX* ctx);
-void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN int* ft_table, IN CTX* ctx );
+void coef_modft_table(OUT COEF_POLY* ft_table, IN CTX* ctx); 
+void coef_squ(OUT int* asqu,IN COEF_POLY* ft_table, IN COEF_POLY* a, IN CTX* ctx);
+void gen_Ttable(OUT int* Ttable, OUT int* InvTtable, IN COEF_POLY* ft_table, IN CTX* ctx );
 //--
-void ModExpX_i(OUT POLY* xi, IN POLY* x, IN int i, IN CTX* ctx);
+void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN CTX* ctx);// 
+void POLY_add_zzx(OUT POLY* dst, IN POLY* src, IN CTX* ctx); //
 void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx);
 //== 
 
-void POLY_mod_gx(OUT POLY* dst, IN POLY* src, IN CTX* ctx);
-void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx);
+void POLY_mod_gx(OUT POLY* dst, IN POLY* src, IN CTX* ctx); // 거의 마저?  민진이 
+void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx);     // 나 
+//-- 
+void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN COEF_POLY* ft_table, IN CTX* ctx) ; //0
+void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx); // 나 
+//-- 
+void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx);  //
 //--
-void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN int* ft_table, IN CTX* ctx) ;
-void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx);
-//--
-void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx);
-//--
-void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN CTX* ctx);
-void POLY_add_zzx(OUT POLY* dst, IN POLY* src, IN CTX* ctx);
 void COEF_POLY_add(OUT COEF_POLY* dst, IN COEF_POLY* src1, IN COEF_POLY* src2, IN CTX* ctx);
 void POLY_ADD(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX ctx);
 //-- ...
+//6개 -> 구현. -> 결과. 
 #endif  
