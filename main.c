@@ -184,6 +184,27 @@ void test_poly_mul(POLY Xtable[], COEF_POLY fttable[], CTX* ctx)
     printf("A*B = ");   POLY_print(&C);
 }
 
+void test_scalar_mul(COEF_POLY fttable[], CTX* ctx)
+{
+    COEF_POLY x;
+    int a[10] = {0,0,0,0,0,0,0,1,1,1};
+    COEF_POLY_init(&x, 0); 
+    COEF_POLY_set(&x, a, 9);
+    POLY A, B;
+    int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
+    POLY_init(&A, 0);       POLY_init(&B, 0);
+    POLY_set(&A, aa, 3, 5);
+
+    printf("\n========= scalar MUL ===========\n");
+    printf("x = ");     COEF_POLY_print(&x);    printf("\n");
+    printf("A = ");     POLY_print(&A);
+    MULscalar(&B, &A, &x, fttable, ctx);
+    printf("x*A = ");     POLY_print(&B);
+
+    MULscalar_zzx(&A, &x, fttable, ctx);
+    printf("x*A = ");   POLY_print(&A);
+}
+
 int main()
 {
     test_coef_poly();
@@ -203,6 +224,7 @@ int main()
     test_poly_add();
     test_coef_poly_mul(fttable, &ctx);
     test_poly_mul(Xtable, fttable, &ctx);
+    test_scalar_mul(fttable, &ctx);
 
     return 0;
 }

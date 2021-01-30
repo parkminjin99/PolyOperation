@@ -290,7 +290,8 @@ void coef_modft_table(OUT COEF_POLY* ft_table, IN CTX* ctx){
     }
 }
 
-void coef_squ(OUT int* asqu,IN COEF_POLY* ft_table, IN COEF_POLY* a, IN CTX* ctx){  
+void coef_squ(OUT int* asqu,IN COEF_POLY* ft_table, IN COEF_POLY* a, IN CTX* ctx)
+{  
     //int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0;
     COEF_POLY tmp;
     COEF_POLY_init(&tmp,0);
@@ -392,6 +393,15 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx)
 
 }
 
+void COEF_POLY_mul_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN COEF_POLY* ft_table, IN CTX* ctx)
+{
+    COEF_POLY temp;
+    COEF_POLY_init(&temp, 0);
+    COEF_POLY_copy(&temp, dst);
+    COEF_POLY_init(dst, 0);
+    COEF_POLY_mul(dst,&temp,src, ft_table, ctx);
+}
+
 void COEF_POLY_mul(OUT COEF_POLY* dst,IN COEF_POLY* src1, IN COEF_POLY* src2, IN COEF_POLY* ft_table, IN CTX* ctx) 
 {
     int vec[MAX_COEF_POLY_DEGREE]={0,};
@@ -427,12 +437,19 @@ void POLY_mul(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx, IN COEF_
     POLY_mod_gx(dst, ctx, Xtable);
 }   
 
-void MULscalar(OUT POLY* dst, IN POLY* fx, IN COEF_POLY gt, IN COEF_POLY* ft_table, IN CTX* ctx)
+void MULscalar_zzx(IN OUT POLY* dst, IN COEF_POLY* src, IN COEF_POLY ft_table[], IN CTX* ctx)
 {
-    dst->max_degree = fx->max_degree;
-    for(int i = 0; i<=fx->max_degree;i++){
-        COEF_POLY_mul(&dst->coef[i], &fx->coef[i], &gt, ft_table, ctx);
-    }
+    for(int i = 0; i <= dst->max_degree; i++)
+        COEF_POLY_mul_zzx(&dst->coef[i], src, ft_table, ctx);
+    set_POLY_degree(dst);
+}
+
+void MULscalar(OUT POLY* dst, IN POLY* src1, IN COEF_POLY* src2, IN COEF_POLY ft_table[], IN CTX* ctx)
+{
+    dst->max_degree = src1->max_degree;
+    for(int i = 0; i <= src1->max_degree; i++)
+        COEF_POLY_mul(&dst->coef[i], &src1->coef[i], src2, ft_table, ctx);
+    set_POLY_degree(dst); // dst의 차수가 달라질 수 있으므로 
 }
 
 void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src)

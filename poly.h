@@ -67,10 +67,12 @@ void POLY_mod_ft(OUT IN COEF_POLY* dst, IN CTX* ctx);
 void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[]); // 거의 마저?  민진이 
 void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx);     // 나 
 //-- 
+void COEF_POLY_mul_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN COEF_POLY* ft_table, IN CTX* ctx);
 void COEF_POLY_mul(OUT COEF_POLY* dst,IN COEF_POLY* src1, IN COEF_POLY* src2, IN COEF_POLY* ft_table, IN CTX* ctx); //0
 void POLY_mul(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx, IN COEF_POLY fttable[], IN POLY Xtable[]); // 나 
 //-- 
-void MULscalar(OUT POLY* dst, IN POLY* fx, IN COEF_POLY gt, IN COEF_POLY* ft_table, IN CTX* ctx);  //
+void MULscalar_zzx(IN OUT POLY* dst, IN COEF_POLY* src, IN COEF_POLY ft_table[], IN CTX* ctx);
+void MULscalar(OUT POLY* dst, IN POLY* src1, IN COEF_POLY* src2, IN COEF_POLY ft_table[], IN CTX* ctx);  //
 //--
 void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src);
 void POLY_add_zzx(OUT POLY* dst, IN POLY* src);
