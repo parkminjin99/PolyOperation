@@ -59,6 +59,30 @@ void ctx_set(CTX* ctx, int ft[m+1], int gx[t+1], int deg_ft, int deg_gx)
         }
 }
 
+void set_COEF_POLY_degree(COEF_POLY* dst)
+{
+    for(int i = m-1 ;i >= 0; i--)
+    {
+        if(dst->coef[i]!=0)
+        {
+            dst->coef_max_degree = i;
+            break;
+        }
+    }
+}
+
+void set_POLY_degree(POLY* dst)
+{
+    for(int i = t-1; i >= 0; i--)
+    {    
+        if(COEF_is_zero(&dst->coef[i]) != TRUE)    
+        {
+            dst->max_degree = i;
+            break;
+        }
+    }
+}
+
 //===================================================================================
 
 void COEF_POLY_copy(COEF_POLY* dst, COEF_POLY* src)
@@ -81,26 +105,26 @@ void COEF_POLY_print(COEF_POLY* ft)
     while(max_deg >= 0){                     
         if(ft->coef[max_deg] != 0){          // 해당 수가 0이 아니라면 실행
             if(first == 0){                  // 0이 아닌 수가 처음이 아니라면 '+'기호를 먼저 print함
-                printf("+ ");
+                printf(" + ");
             }
             
             if(max_deg == 0){                // 0차의 수는 상수이므로 상수만 출력
-                printf("%d ", ft->coef[max_deg]);
+                printf("%d", ft->coef[max_deg]);
             }
             else if(max_deg == 1)
             {           // 1차의 수는 () * t로 출력
-                if(ft->coef[max_deg] == 1)      printf("t ");
-                else                            printf("%d * t ", ft->coef[max_deg]);
+                if(ft->coef[max_deg] == 1)      printf("t");
+                else                            printf("%d * t", ft->coef[max_deg]);
             }
             else{                            // n차의 수는 () * t^n로 출력 (n > 1)
-                if(ft->coef[max_deg])           printf("t^%d ", max_deg);
-                else                            printf("%d * t^%d ", ft->coef[max_deg], max_deg);
+                if(ft->coef[max_deg])           printf("t^%d", max_deg);
+                else                            printf("%d * t^%d", ft->coef[max_deg], max_deg);
             }
             first = 0;                       // 한 번이라도 if문이 실행되면 first를 0으로 변경
         }
         else{
             if(ft->coef_max_degree == 0)     // ft가 0이라면 그대로 0만 출력
-                printf("%d ", ft->coef[max_deg]);
+                printf("%d", ft->coef[max_deg]);
         }
         max_deg -= 1;                      
     }
@@ -143,7 +167,7 @@ void POLY_print(POLY* fx)
         if(COEF_is_zero(&fx->coef[max_deg]) != 0)
         {           // 해당 수가 0이 아니라면 실행
             if(first == 0){                                  // 0이 아닌 수가 처음이 아니라면 '+'기호를 먼저 print함
-                printf("+ ");
+                printf(" + ");
             }
 
             if(max_deg == 0){                                // 0차의 수는 상수이므로 상수만 출력
@@ -153,22 +177,22 @@ void POLY_print(POLY* fx)
             }
             else if(max_deg == 1){                            // 1차의 수는 () * X로 출력
                 if(fx->coef[max_deg].coef_max_degree == 0 && fx->coef[max_deg].coef[0] == 1)
-                    printf("X ");
+                    printf("X");
                 else
                 {
                     printf("(");
                     COEF_POLY_print(&fx->coef[max_deg]);
-                    printf(") * X ");
+                    printf(") * X");
                 }
             }
             else{                                             // n차의 수는 () * X^n로 출력 (n > 1)
                 if(fx->coef[max_deg].coef_max_degree == 0 && fx->coef[max_deg].coef[0] == 1)
-                    printf("X^%d ", max_deg);
+                    printf("X^%d", max_deg);
                 else
                 {
                     printf("(");
                     COEF_POLY_print(&fx->coef[max_deg]);
-                    printf(") * X^%d ", max_deg);   
+                    printf(") * X^%d", max_deg);   
                 }
             }
             first = 0;                                        // 한 번이라도 if문이 실행되면 first를 0으로 변경
@@ -266,7 +290,6 @@ void coef_modft_table(OUT COEF_POLY* ft_table, IN CTX* ctx){
     }
 }
 
-
 void coef_squ(OUT int* asqu,IN COEF_POLY* ft_table, IN COEF_POLY* a, IN CTX* ctx){  
     //int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0;
     COEF_POLY tmp;
@@ -340,26 +363,28 @@ void COEF_POLY_mod_ft(OUT IN COEF_POLY* dst, IN CTX* ctx, IN COEF_POLY fttable[]
     int max_deg = dst->coef_max_degree;
     for(int i = m; i<= max_deg; i++)
     {
-        dst->coef[i] = 0;
-        COEF_POLY_add_zzx(dst, &fttable[i-m]);
+        if(dst->coef[i] == 1)
+        {
+            dst->coef[i] = 0;
+            COEF_POLY_add_zzx(dst, &fttable[i-m]);
+        }
     }
+    set_COEF_POLY_degree(dst);
 }
 
 void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[])
 {  
     if(dst->max_degree < t)    return;
     int max_deg = dst->max_degree;
-
-    COEF_POLY temp; 
-    COEF_POLY_init(&temp, 0);
     for(int i = t; i <= max_deg; i++) 
     {
-        for(int j = 0; j <= Xtable[i-t].max_degree; j++)
-        {
+        for(int j = 0; j <= Xtable[i-t].max_degree; j++) // mul scalar 대체 부분 나중에 구현되면 적용 예정
             if(Xtable[i-t].coef[j].coef[0] != 0)
                 COEF_POLY_add_zzx(&dst->coef[j], &dst->coef[i]);
-        }
+        COEF_POLY_init(&dst->coef[i], 0);
+        //POLY_print(dst);
     }
+    set_POLY_degree(dst); // dst poly 차수 정하는 부분
 }
 
 void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx)
@@ -367,46 +392,39 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx)
 
 }
 
-void COEF_POLY_mul(OUT COEF_POLY* ht,IN COEF_POLY* ft, IN COEF_POLY* gt, IN COEF_POLY* ft_table, IN CTX* ctx) 
+void COEF_POLY_mul(OUT COEF_POLY* dst,IN COEF_POLY* src1, IN COEF_POLY* src2, IN COEF_POLY* ft_table, IN CTX* ctx) 
 {
-    int vec[MAX_COEF_POLY_DEGREE]={0,}, sum, deg=0;
-    //int tmp[MAX_COEF_POLY_DEGREE]={0,};
-    for(int i=0;i<=ft->coef_max_degree;i++)
+    int vec[MAX_COEF_POLY_DEGREE]={0,};
+    for(int i = 0; i <= src1->coef_max_degree; i++)
+        for(int j = 0; j <= src2->coef_max_degree; j++)
+            dst->coef[i+j] ^= src1->coef[i] * src2->coef[j];
+
+    for(int i = MAX_COEF_POLY_DEGREE; i >= 0; i--) 
     {
-        for(int j=0;j<=gt->coef_max_degree;j++)
+        if(dst->coef[i] != 0)    
         {
-            vec[i+j] ^= ft->coef[i]*gt->coef[j];
-        }
-    }
-    sum=ft->coef_max_degree+gt->coef_max_degree;
-    for(int i=sum;i>=m;i--)
-    {
-        if(vec[i]==1)
-        {
-            vec[i]=0;
-            //int2vec(tmp,&vec_size,ft_table[i-m]);
-            //printf(" %d ",ft_table[i-m]);
-            for(int j=0;j<=ft_table[i-m].coef_max_degree;j++)
-            {
-                vec[j]^=ft_table[i-m].coef[j];
-            }
-        }
-        //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");   //?
-    }
-    for(int i=m-1;i>=0;i--)
-    {
-        if(vec[i]!=0)
-        {
-            deg=i;
+            dst->coef_max_degree = i;
             break;
         }
     }
-    COEF_POLY_set(ht,vec,deg);
+    COEF_POLY_mod_ft(dst, ctx, ft_table);
 }
 
-void POLY_MUL(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx)
+void POLY_mul(OUT POLY* dst, IN POLY* src1, IN POLY* src2, IN CTX* ctx, IN COEF_POLY fttable[], IN POLY Xtable[])
 {
-
+    for(int i = 0;i <= src1->max_degree; i++)
+        for(int j = 0; j <= src2->max_degree; j++)
+            COEF_POLY_mul(&dst->coef[i+j], &src1->coef[i], &src2->coef[j], fttable, ctx);
+    for(int i = MAX_POLY_DEGREE; i >= 0; i--)
+    {
+        if(COEF_is_zero(&dst->coef[i]) != TRUE)    
+        {
+            dst->max_degree = i;
+            break;
+        }
+    }
+    //POLY_print(dst);
+    POLY_mod_gx(dst, ctx, Xtable);
 }   
 
 void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx)
@@ -416,7 +434,8 @@ void MULscalar(OUT POLY* dst, IN POLY* src, IN int a, IN CTX ctx)
 
 void COEF_POLY_add_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src)
 {
-    for(int i = 0; i <= src->coef_max_degree; i++)
+    int max_deg = MAX(src->coef_max_degree, dst->coef_max_degree);
+    for(int i = 0; i <= max_deg; i++)
     {
         dst->coef[i] ^= src->coef[i];
         if(dst->coef[i] != 0)   dst->coef_max_degree = i;

@@ -147,9 +147,41 @@ void test_poly_add()
     printf("A + B = ");     POLY_print(&CC);    
 }
 
-void test_mod()
+void test_coef_poly_mul(COEF_POLY fttable[], CTX* ctx)
 {
-    
+    COEF_POLY A;
+    int a[10] = {0,0,0,0,0,0,0,1,1,1};
+    COEF_POLY B;
+    int b[7] = {0,0,1,0,0,1,0};    
+    COEF_POLY C;
+
+    COEF_POLY_init(&A, 0); 
+    COEF_POLY_set(&A, a, 9);
+    COEF_POLY_init(&B, 0); 
+    COEF_POLY_set(&B, b, 5);
+    COEF_POLY_init(&C, 0); 
+
+    printf("\n========= COEF_POLY MUL ===========\n");
+    printf("A = ");     COEF_POLY_print(&A); printf("\n");
+    printf("B = ");     COEF_POLY_print(&B); printf("\n");
+    COEF_POLY_mul(&C, &A, &B, fttable, ctx) ;
+    printf("A*B = ");     COEF_POLY_print(&C); printf("\n");
+}
+
+void test_poly_mul(POLY Xtable[], COEF_POLY fttable[], CTX* ctx)
+{
+    POLY A, B, C;
+    int aa[2+1][MAX_COEF_POLY_DEGREE+1] = {{0,0,0,0,0,0,}, {0,0,0,0,0,1,}, {0,0,0,0,0,0,1,1,}};
+    int bb[t+1][MAX_COEF_POLY_DEGREE+1] = {{0,0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {1,0,0,0,0,0,0,1,}};
+    bb[t][4] = 1, bb[t][7] = 1;
+    POLY_init(&A, 0);   POLY_init(&B, 0);   POLY_init(&C, 0);  
+    POLY_set(&A, aa, 2, 7);    POLY_set(&B, bb, t, 7);
+
+    printf("\n========= POLY MUL ===========\n");
+    printf("A = ");     POLY_print(&A);
+    printf("B = ");     POLY_print(&B);
+    POLY_mul(&C, &A, &B, ctx, fttable, Xtable);
+    printf("A*B = ");   POLY_print(&C);
 }
 
 int main()
@@ -169,31 +201,8 @@ int main()
     test_gen_Ttable(fttable, &ctx);
 
     test_poly_add();
-    test_mod();
-
-
-    COEF_POLY A;
-    int a[10] = {0,0,0,0,0,0,0,0,0,1};
-    COEF_POLY B;
-    int b[7] = {0,0,0,0,0,1,0};    
-    COEF_POLY C;
-
-    COEF_POLY_init(&A, 0); 
-    COEF_POLY_set(&A, a, 9);
-    COEF_POLY_init(&B, 0); 
-    COEF_POLY_set(&B, b, 5);
-    COEF_POLY_init(&C, 0); 
-
-    printf("\n=========COEF_POLY===========\n");
-    COEF_POLY_print(&A); printf("\n");
-    COEF_POLY_print(&B); printf("\n");
-
-    //zero = COEF_is_zero(&A);
-    COEF_POLY_mul(&C, &A, &B, fttable, &ctx) ;
-
-
-    COEF_POLY_print(&C); printf("\n");
-
+    test_coef_poly_mul(fttable, &ctx);
+    test_poly_mul(Xtable, fttable, &ctx);
 
     return 0;
 }
