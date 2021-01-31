@@ -65,25 +65,39 @@ void test_poly()
 void set_CTX(CTX* ctx)
 {
     printf("\n========= Set CTX ===========\n");
-    int gx[t+1] = {0,};
 #if m == 12
     int ft[m+1]={1,1,0,1,0,1,1,1,0,0,0,0,1};
 #elif m == 13
     int ft[m+1]={1,1,0,1,1,0,0,0,0,0,0,0,0,1};
 #endif
-
-#if t == 64
-    // ô«äÞ ?ýØêî Ó¹ñË...ªÐªÐªÐªÐªÐªÐ
+    ctx_init(ctx);
+#if t == 64 // 64Â÷¤¾¤¾¤¾¤¾¤¾¤¾¤¾¤¾ °³°°Àº°Å:)
+    // x^64 +
+    // (t^11 + t^9 + t^8 + t^4 + t^3 + t)*x^3 + 
+    // (t^10 + t^9 + t^8 + t^7 + t^6 + t^4 + t^3 + 1)*x^2 + 
+    // (t^10 + t^9 + t^8 + t^7 + t^3 + t^2 + 1)*x + 
+    // t^5 + t^4 + t^3 + t^2
+    int gx[t+1][m+1] = {0,};
+    gx[0][5] = gx[0][4] = gx[0][3] = gx[0][2] = 1;
+    gx[1][10] = gx[1][9] = gx[1][8] = gx[1][7] = gx[1][3] = gx[1][2] = gx[1][0] = 1;
+    gx[2][10] = gx[2][9] = gx[2][8] = gx[2][7] = gx[2][6] = gx[2][4] = gx[2][3] = gx[2][0] = 1;
+    gx[3][11] = gx[3][9] = gx[3][8] = gx[3][4] = gx[3][3] = gx[3][1] = 1;
+    gx[64][0] = 1;
+    ctx_set_m_12(ctx, ft, gx, m, t);
 #elif t == 96
+    int gx[t+1] = {0,};
     gx[0]=1; gx[1]=1; gx[2]=1; gx[3]=1; gx[5]=1; gx[6]=1; gx[96]=1;
+    ctx_set(ctx, ft, gx, m, t);
 #elif t == 119
+    int gx[t+1] = {0,};
     gx[0]=1; gx[8]=1; gx[119]=1;
+    ctx_set(ctx, ft, gx, m, t);
 #elif t == 128
+    int gx[t+1] = {0,};
     gx[0]=1; gx[1]=1; gx[2]=1; gx[7]=1; gx[128]=1;
+    ctx_set(ctx, ft, gx, m, t);
 #endif
 
-    ctx_init(ctx);
-    ctx_set(ctx, ft, gx, m, t);
     printf("PRINT mod_gx\n");
     POLY_print(&ctx->mod_gx);
     printf("PRINT mod_coef\n");
@@ -91,10 +105,10 @@ void set_CTX(CTX* ctx)
     printf("\n");
 }
 
-void test_gen_Xtable(POLY* Xtable, CTX* ctx)
+void test_gen_Xtable(POLY* Xtable, CTX* ctx, COEF_POLY fttable[])
 {
     printf("\n========= GEN Xitable ===========\n");
-    gen_Xitable(Xtable, ctx);
+    gen_Xitable(Xtable, ctx, fttable);
     for(int i = 0; i <= t; i++)
     {
         printf("[X^%d]\t\t", i+t);
@@ -112,7 +126,7 @@ void test_gen_fttable(COEF_POLY* fttable, CTX* ctx)
     coef_modft_table(fttable, ctx);
     for(int i = 0; i <= m; i++)
     {
-       // printf("[t^%d]\t\t\n", i+m);    COEF_POLY_print(&fttable[i]);   printf("\n");
+        //printf("[t^%d]\t\t\n", i+m);    COEF_POLY_print(&fttable[i]);   printf("\n");
     }
 }
 
@@ -124,7 +138,7 @@ void test_gen_Ttable(int Ttable[],int InvTtable[], COEF_POLY* fttable, CTX* ctx)
     printf("i   ttable   invttable\n");
     for(int i = 0; i < pow(2,m); i++)
     {
-    //    printf("[%d]\t\t%d\t\t%d\n", i,Ttable[i],InvTtable[i]);  
+        //printf("[%d]\t\t%d\t\t%d\n", i,Ttable[i],InvTtable[i]);  
     }
 
 }
@@ -202,6 +216,26 @@ void test_scalar_mul(COEF_POLY fttable[], CTX* ctx)
     printf("x*A = ");   POLY_print(&A);
 }
 
+void test_xsqrt(COEF_POLY fttable[], int Ttable[], POLY Xtable[], CTX* ctx)
+{
+    printf("\n========= POLY Xsqrt ===========\n");
+    POLY AA, AA_sqrt,AA_square;
+    int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,0,0,0,0,0,}, {0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {1,0,0,0,0,0,}};
+    POLY_init(&AA, 0);     POLY_init(&AA_sqrt, 0);  POLY_init(&AA_square,0);
+    POLY_set(&AA, aa, 3, 5);
+    //printf("AA = ");        POLY_print(&AA);
+
+    X_sqrt(&AA_sqrt, Xtable, &AA, fttable, Ttable,ctx);
+    //printf("AA_sqrt = ");    POLY_print(&AA_sqrt);
+
+    POLY_mul(&AA_square,&AA_sqrt,&AA_sqrt,ctx,fttable,Xtable);
+    //printf("AA = ");        POLY_print(&AA_square);
+    if(POLY_equal(&AA, &AA_square)== TRUE)
+        printf("TRUE\n");
+    else
+        printf("FALSE\n");
+}
+
 int main()
 {
     test_coef_poly();
@@ -217,34 +251,21 @@ int main()
     test_gen_Ttable(Ttable, InvTtable, fttable, &ctx);
     
     POLY Xtable[t+1];
-    test_gen_Xtable(Xtable, &ctx);
+    test_gen_Xtable(Xtable, &ctx, fttable);
 
     test_poly_add();
     test_coef_poly_mul(fttable, &ctx);
     test_poly_mul(Xtable, fttable, &ctx);
     test_scalar_mul(fttable, &ctx);
-    
-    printf("\n=========POLY===========\n");
-    POLY AA, AA_sqrt,AA_square;
-    int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
-    POLY_init(&AA, 0);     POLY_init(&AA_sqrt, 0);  POLY_init(&AA_square,0);
-    POLY_set(&AA, aa, 3, 5);
-    POLY_print(&AA);
-
-    X_sqrt(&AA_sqrt, Xtable, &AA,fttable, Ttable,&ctx);
-    POLY_print(&AA_sqrt);
-
-    POLY_mul(&AA_square,&AA_sqrt,&AA_sqrt,&ctx,fttable,Xtable);
-    POLY_print(&AA_square);
+    test_xsqrt(fttable, Ttable, Xtable, &ctx);
 
     //==============±âº» ³¡ =====================
     //==Ri
     clock_t start, end; 
     double result_ac, result_af;
 
-    POLY Ri[t/2];
+    POLY Ri[t/2];   //   RiÅ×ÀÌºí »ý¼º 
     POLY S,S_sqrt;
-
     for(int i=0;i<t/2;i++)
     {
         POLY_init(&S,0); POLY_init(&S_sqrt,0);
@@ -256,14 +277,15 @@ int main()
     }
 
     //==== algorithm 1==
+    printf("\n========= Algorithm1 ===========\n");
     POLY Qx ,Qx_al1,Qx_al1_ver;
     int qq[t-1+1][MAX_COEF_POLY_DEGREE+1] = {{0,0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {1,0,0,0,0,0,0,1,}};
     qq[t-3][4] = 1;
     qq[t-10][4] = 1;
     qq[t-1][4] = 1, qq[t-1][7] = 1;
-    for(int i =0;i<t;i++)
+    for(int i = 0; i < t; i++)
     {
-        for(int j=0;j<2;j++)
+        for(int j = 0; j < 2 ; j++)
         {
             qq[i][j]=1;
         }
@@ -277,13 +299,17 @@ int main()
     X_sqrt(&Qx_al1, Xtable, &Qx, fttable, Ttable, &ctx);
     end = clock();
     result_ac = (double)(end - start)/(double)CLOCKS_PER_SEC;
-    printf("%f\n",result_ac);
+    //printf("%f\n",result_ac);
     //printf("Qx="); POLY_print(&Qx); 
     //printf("Qx_result="); POLY_print(&Qx_al1); 
     POLY_mul(&Qx_al1_ver,&Qx_al1,&Qx_al1,&ctx,fttable,Xtable);
     //printf("Qx_ver="); POLY_print(&Qx_al1_ver);
-    
+    if(POLY_equal(&Qx, &Qx_al1_ver)== TRUE)
+        printf("TRUE\n");
+    else
+        printf("FALSE\n");
 
+    printf("\n========= Algorithm2 ===========\n");
     POLY Qx_al2,Qx_al2_ver;
     POLY Qx_odd;
     int z,a;
@@ -294,7 +320,7 @@ int main()
     start = clock();
     for(int i=0;i<=(t-1)/2;i++)
     {
-        vec2int(&a,Qx.coef[2*i].coef,Qx.coef[2*i].coef_max_degree);
+        vec2int(&a,Qx.coef[2*i].coef,Qx.coef[2*i].coef_max_degree+1);
         z = InvTtable[a];
         int2vec(Qx_al2.coef[i].coef,&Qx_al2.coef[i].coef_max_degree,z);
     }
@@ -309,12 +335,17 @@ int main()
         POLY_add_zzx(&Qx_al2,&Qx_odd);
     }
     end = clock();
-    result_af = (double)(end - start)/(double)CLOCKS_PER_SEC;
-    printf("%f\n",result_af);
-    printf("[al1 | al2] %f %f\n", result_ac, result_af);
+    result_af = (double)(end - start)/(double)CLOCKS_PER_SEC;   
+    //printf("%f\n",result_af);
 
     //printf("Qx_result="); POLY_print(&Qx_al2); 
     POLY_mul(&Qx_al2_ver,&Qx_al2,&Qx_al2,&ctx,fttable,Xtable);
-    //printf("Qx_ver="); POLY_print(&Qx_al2_ver); 
+   // printf("Qx_ver="); POLY_print(&Qx_al2_ver); 
+    if(POLY_equal(&Qx, &Qx_al2_ver)== TRUE)
+        printf("TRUE\n");
+    else
+        printf("FALSE\n");
+    
+    printf("[al1 | al2] %f %f\n", result_ac, result_af);
     return 0;
 }
