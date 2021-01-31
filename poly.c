@@ -73,6 +73,7 @@ void set_COEF_POLY_degree(COEF_POLY* dst)
 
 void set_POLY_degree(POLY* dst)
 {
+    dst->max_degree=0;
     for(int i = t-1; i >= 0; i--)
     {    
         if(COEF_is_zero(&dst->coef[i]) != TRUE)    
@@ -344,6 +345,7 @@ void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx)
 { 
     POLY_copy(&Xtable[0],&ctx->mod_gx);
     COEF_POLY_init(&Xtable[0].coef[t], 0);
+    set_POLY_degree(&Xtable[0]);
     for(int i = 1; i <= t; i++) // Xtable[i] POLY 생성 
     {
         POLY_init(&Xtable[i], 0);
@@ -388,8 +390,8 @@ void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[])
     set_POLY_degree(dst); // dst poly 차수 정하는 부분
 }
 
-void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src, IN int* Ttable, IN CTX* ctx){  //x^i
-    POLY tmp;
+void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src,IN COEF_POLY* fttable, IN int* Ttable, IN CTX* ctx){  //x^i
+    POLY tmp,aaa;
     POLY x;
     int k,n;
     int vec[MAX_COEF_POLY_DEGREE]={0,}, vec_size=0;
@@ -397,7 +399,7 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src, IN int* Ttable, IN
     POLY_init(&x,0);
     POLY_copy(&x,src);
     //POLY_print(&x);
-    for(int count=0;count<m*t;count++){
+    for(int count=0;count<m*t-1;count++){
         POLY_init(&tmp,0);
         for(int i=x.max_degree;i>=0;i--)
         {
@@ -420,21 +422,28 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src, IN int* Ttable, IN
             COEF_POLY_set(&tmp.coef[2*i],vec,vec_size-1);
         }
         tmp.max_degree = 2 * x.max_degree;
-        //POLY_print(&tmp);
+       
+       // POLY_print(&tmp); printf("\n");
         //POLY_mod_gx(&tmp,ctx,Xtable);
+        //printf(" %d ",tmp.max_degree);
         for(int i=tmp.max_degree;i>=t;i=i-2)
         {
+            POLY_init(&aaa,0);
             if(COEF_is_zero(&tmp.coef[i])==FALSE)
             {
+                MULscalar(&aaa,&Xtable[i-t],&tmp.coef[i],fttable,ctx);
+                //printf("xt="); POLY_print(&Xtable[i-t]); 
+                //printf("  %d  ",aaa.max_degree);
                 for(int j=0;j<tmp.coef[i].coef_max_degree+1;j++)
                 {
                     tmp.coef[i].coef[j]=0; // 일단 i 0으로
                 }
-                POLY_add_zzx(&tmp,&Xtable[i-t]);
+                //POLY_print(&aaa); printf("\n");
+                POLY_add_zzx(&tmp,&aaa); 
             }
         //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");
         }
-    //COEF_POLY_print(&tmp); printf("\n");
+       //POLY_print(&tmp); printf("\n");
         POLY_copy(&x,&tmp);
     }
     POLY_copy(x_sqrt,&x);
@@ -454,7 +463,6 @@ void COEF_POLY_mul_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN COEF_POLY* ft_t
 
 void COEF_POLY_mul(OUT COEF_POLY* dst,IN COEF_POLY* src1, IN COEF_POLY* src2, IN COEF_POLY* ft_table, IN CTX* ctx) 
 {
-    int vec[MAX_COEF_POLY_DEGREE]={0,};
     for(int i = 0; i <= src1->coef_max_degree; i++)
         for(int j = 0; j <= src2->coef_max_degree; j++)
             dst->coef[i+j] ^= src1->coef[i] * src2->coef[j];

@@ -1,8 +1,6 @@
 #include "poly.h"
-
 void test_coef_poly()
 {
-    int zero;
     COEF_POLY A;
     int a[10] = {1,1,1,1,1,1,1,1,1,1};
     COEF_POLY B;
@@ -114,7 +112,7 @@ void test_gen_fttable(COEF_POLY* fttable, CTX* ctx)
     coef_modft_table(fttable, ctx);
     for(int i = 0; i <= m; i++)
     {
-        printf("[t^%d]\t\t\n", i+m);    COEF_POLY_print(&fttable[i]);   printf("\n");
+       // printf("[t^%d]\t\t\n", i+m);    COEF_POLY_print(&fttable[i]);   printf("\n");
     }
 }
 
@@ -126,7 +124,7 @@ void test_gen_Ttable(int Ttable[],int InvTtable[], COEF_POLY* fttable, CTX* ctx)
     printf("i   ttable   invttable\n");
     for(int i = 0; i < pow(2,m); i++)
     {
-        printf("[%d]\t\t%d\t\t%d\n", i,Ttable[i],InvTtable[i]);  
+    //    printf("[%d]\t\t%d\t\t%d\n", i,Ttable[i],InvTtable[i]);  
     }
 
 }
@@ -211,17 +209,15 @@ int main()
 
     CTX ctx;
     set_CTX(&ctx);
-
-    POLY Xtable[t+1];
-    test_gen_Xtable(Xtable, &ctx);
-
-    COEF_POLY fttable[m];
-  
+    COEF_POLY fttable[m+1];
     test_gen_fttable(fttable, &ctx);
 
     int Ttable[8192]={0,};
     int InvTtable[8192]={0,};
     test_gen_Ttable(Ttable, InvTtable, fttable, &ctx);
+    
+    POLY Xtable[t+1];
+    test_gen_Xtable(Xtable, &ctx);
 
     test_poly_add();
     test_coef_poly_mul(fttable, &ctx);
@@ -235,10 +231,90 @@ int main()
     POLY_set(&AA, aa, 3, 5);
     POLY_print(&AA);
 
-    X_sqrt(&AA_sqrt, Xtable, &AA,Ttable, &ctx);
+    X_sqrt(&AA_sqrt, Xtable, &AA,fttable, Ttable,&ctx);
     POLY_print(&AA_sqrt);
 
     POLY_mul(&AA_square,&AA_sqrt,&AA_sqrt,&ctx,fttable,Xtable);
     POLY_print(&AA_square);
+
+    //==============±âº» ³¡ =====================
+    //==Ri
+    clock_t start, end; 
+    double result_ac, result_af;
+
+    POLY Ri[t/2];
+    POLY S,S_sqrt;
+
+    for(int i=0;i<t/2;i++)
+    {
+        POLY_init(&S,0); POLY_init(&S_sqrt,0);
+        S.coef[2*i+1].coef[0]=1;
+        S.max_degree=2*i+1;
+        S.coef[2*i+1].coef_max_degree=0;
+        X_sqrt(&S_sqrt,Xtable,&S,fttable, Ttable,&ctx);
+        POLY_copy(&Ri[i],&S_sqrt);
+    }
+
+    //==== algorithm 1==
+    POLY Qx ,Qx_al1,Qx_al1_ver;
+    int qq[t-1+1][MAX_COEF_POLY_DEGREE+1] = {{0,0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {0,0,0,0,0,0,}, {1,0,0,0,0,0,0,1,}};
+    qq[t-3][4] = 1;
+    qq[t-10][4] = 1;
+    qq[t-1][4] = 1, qq[t-1][7] = 1;
+    for(int i =0;i<t;i++)
+    {
+        for(int j=0;j<2;j++)
+        {
+            qq[i][j]=1;
+        }
+    }
+    POLY_init(&Qx, 0); 
+    POLY_init(&Qx_al1,0); 
+    POLY_init(&Qx_al1_ver,0);
+    POLY_set(&Qx, qq, t-1, 7);
+
+    start = clock();
+    X_sqrt(&Qx_al1, Xtable, &Qx, fttable, Ttable, &ctx);
+    end = clock();
+    result_ac = (double)(end - start)/(double)CLOCKS_PER_SEC;
+    printf("%f\n",result_ac);
+    //printf("Qx="); POLY_print(&Qx); 
+    //printf("Qx_result="); POLY_print(&Qx_al1); 
+    POLY_mul(&Qx_al1_ver,&Qx_al1,&Qx_al1,&ctx,fttable,Xtable);
+    //printf("Qx_ver="); POLY_print(&Qx_al1_ver);
+    
+
+    POLY Qx_al2,Qx_al2_ver;
+    POLY Qx_odd;
+    int z,a;
+    POLY_init(&Qx_al2,0); 
+    POLY_init(&Qx_al2_ver,0);
+    COEF_POLY tmp;
+
+    start = clock();
+    for(int i=0;i<=(t-1)/2;i++)
+    {
+        vec2int(&a,Qx.coef[2*i].coef,Qx.coef[2*i].coef_max_degree);
+        z = InvTtable[a];
+        int2vec(Qx_al2.coef[i].coef,&Qx_al2.coef[i].coef_max_degree,z);
+    }
+    for(int i=0;i<=(t/2)-1;i++)
+    {
+        COEF_POLY_init(&tmp,0);
+        POLY_init(&Qx_odd,0);
+        vec2int(&a,Qx.coef[2*i+1].coef,Qx.coef[2*i+1].coef_max_degree+1);
+        z = InvTtable[a];
+        int2vec(tmp.coef,&tmp.coef_max_degree,z);
+        MULscalar(&Qx_odd,&Ri[i],&tmp,fttable,&ctx);
+        POLY_add_zzx(&Qx_al2,&Qx_odd);
+    }
+    end = clock();
+    result_af = (double)(end - start)/(double)CLOCKS_PER_SEC;
+    printf("%f\n",result_af);
+    printf("[al1 | al2] %f %f\n", result_ac, result_af);
+
+    //printf("Qx_result="); POLY_print(&Qx_al2); 
+    POLY_mul(&Qx_al2_ver,&Qx_al2,&Qx_al2,&ctx,fttable,Xtable);
+    //printf("Qx_ver="); POLY_print(&Qx_al2_ver); 
     return 0;
 }
