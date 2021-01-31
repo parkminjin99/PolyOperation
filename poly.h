@@ -65,7 +65,7 @@ void gen_Xitable(OUT POLY Xtable[], IN CTX* ctx);
 //== 
 void POLY_mod_ft(OUT IN COEF_POLY* dst, IN CTX* ctx);
 void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[]); // 거의 마저?  민진이 
-void X_sqrt(OUT POLY* x_sqrt, IN POLY* x, IN CTX* ctx);     // 나 
+void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src,IN int* Ttable, IN CTX* ctx);
 //-- 
 void COEF_POLY_mul_zzx(OUT COEF_POLY* dst, IN COEF_POLY* src, IN COEF_POLY* ft_table, IN CTX* ctx);
 void COEF_POLY_mul(OUT COEF_POLY* dst,IN COEF_POLY* src1, IN COEF_POLY* src2, IN COEF_POLY* ft_table, IN CTX* ctx); //0

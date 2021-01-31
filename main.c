@@ -118,11 +118,10 @@ void test_gen_fttable(COEF_POLY* fttable, CTX* ctx)
     }
 }
 
-void test_gen_Ttable(COEF_POLY* fttable, CTX* ctx)
+void test_gen_Ttable(int Ttable[],int InvTtable[], COEF_POLY* fttable, CTX* ctx)
 {
     printf("\n========= GEN Ttable ===========\n");
-    int Ttable[8192]={0,};
-    int InvTtable[8192]={0,};
+    
     gen_Ttable(Ttable, InvTtable, fttable, ctx ); // f2m의 모든 원소.
     printf("i   ttable   invttable\n");
     for(int i = 0; i < pow(2,m); i++)
@@ -219,12 +218,27 @@ int main()
     COEF_POLY fttable[m];
   
     test_gen_fttable(fttable, &ctx);
-    test_gen_Ttable(fttable, &ctx);
+
+    int Ttable[8192]={0,};
+    int InvTtable[8192]={0,};
+    test_gen_Ttable(Ttable, InvTtable, fttable, &ctx);
 
     test_poly_add();
     test_coef_poly_mul(fttable, &ctx);
     test_poly_mul(Xtable, fttable, &ctx);
     test_scalar_mul(fttable, &ctx);
+    
+    printf("\n=========POLY===========\n");
+    POLY AA, AA_sqrt,AA_square;
+    int aa[3+1][MAX_COEF_POLY_DEGREE+1] = {{1,1,1,1,1,1,}, {1,0,0,0,0,1,}, {1,0,1,0,1,1,}, {0,1,0,1,0,1,}};
+    POLY_init(&AA, 0);     POLY_init(&AA_sqrt, 0);  POLY_init(&AA_square,0);
+    POLY_set(&AA, aa, 3, 5);
+    POLY_print(&AA);
 
+    X_sqrt(&AA_sqrt, Xtable, &AA,Ttable, &ctx);
+    POLY_print(&AA_sqrt);
+
+    POLY_mul(&AA_square,&AA_sqrt,&AA_sqrt,&ctx,fttable,Xtable);
+    POLY_print(&AA_square);
     return 0;
 }
