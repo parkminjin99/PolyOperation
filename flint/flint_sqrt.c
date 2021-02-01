@@ -61,8 +61,8 @@ int main()
     //=============================Gx 설정=======================
     fmpz_t fmz,fm;
     fmpz_init(fmz);
-    
     fmpz_init(fm);
+
     fmpz_one(fmz);
     fq_nmod_poly_set_coeff_fmpz(g, 96, fmz, ctx);
     fq_nmod_poly_set_coeff_fmpz(g, 0, fmz, ctx);
@@ -72,16 +72,18 @@ int main()
     fq_nmod_poly_set_coeff_fmpz(g, 5, fmz, ctx);
     fq_nmod_poly_set_coeff_fmpz(g, 6, fmz, ctx); //Gx 설정 완료
 
-    slong c=129;
-    fmpz_set_d(fmz, c);
+    fmpz_init(fmz);
+    ulong c=2;
+    fmpz_set_ui(fmz, c);
+    //fmpz_init_set_ui(fmz,c);
     fq_nmod_poly_set_coeff_fmpz(Qx, 95, fmz, ctx);
-    c=144;
-    fmpz_set_d(fm, c);
-    fmpz_print(fm);
+    c=44;
+    fmpz_set_ui(fm, c);
+    fmpz_print(fm); printf("\n");
     fq_nmod_poly_set_coeff_fmpz(Qx, 90, fm, ctx);   //Qx설정이 이상
 
-    printf("gx"); fq_nmod_poly_print_pretty(g,"X",ctx);
-    printf("Qx"); fq_nmod_poly_print_pretty(Qx,"X",ctx);
+    printf("gx = "); fq_nmod_poly_print_pretty(g,"X",ctx);     printf("\n");
+    printf("Qx = "); fq_nmod_poly_print_pretty(Qx,"X",ctx);    printf("\n");
 
     
     //printf("%d",fq_nmod_poly_is_irreducible(g,ctx));
