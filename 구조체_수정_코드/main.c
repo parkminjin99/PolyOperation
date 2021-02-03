@@ -15,11 +15,11 @@ void test_poly()
     POLY_print(&AA_copy);
 }
 
-void set_CTX(CTX* ctx)
+void set_CTX(CTX* ctx) 
 {
     printf("\n========= Set CTX ===========\n");
 #if m == 12
-    int ft = 0b1000011101011;
+    int ft = 0b1000011101011; 
 #elif m == 13
     int ft = 0b10000000011011;
 #endif
@@ -208,14 +208,16 @@ int main()
 
     POLY Ri[t/2];   //   Ri테이블 생성 
     POLY S;
+    //printf("R[i]============\n");
     for(int i=0;i<t/2;i++)
     {
-        POLY_init(&S,0); 
+        POLY_init(&S,0);
         //POLY_init(&S_sqrt,0);
         S.coef[2*i+1] = 1;
         S.max_degree = 2*i+1;
         X_sqrt(&Ri[i],Xtable,&S,fttable, Ttable,&ctx);
         //POLY_copy(&Ri[i],&S_sqrt);
+        //POLY_print(&Ri[i]);
     }
 
     //==== algorithm 1==
@@ -259,13 +261,19 @@ int main()
     {
         Qx_al2.coef[i] = InvTtable[Qx.coef[2*i]];
     }
+
     for(int i=0;i<=(t/2)-1;i++)
     {
         POLY_init(&Qx_odd,0);
         //tmp = Qx.coef[2*i+1];
-        MULscalar(&Qx_odd,&Ri[i],Qx.coef[2*i+1],fttable,&ctx);
+        //printf("\nri="); POLY_print(&Ri[i]);
+        //COEF_POLY_print(Qx.coef[2*i+1]);
+        MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx.coef[2*i+1]],fttable,&ctx);
+        //printf("Qxodd="); POLY_print(&Qx_odd);
         POLY_add_zzx(&Qx_al2,&Qx_odd);
     }
+    //printf("Qx_Al2="); POLY_print(&Qx_al2);
+
     end = clock();
     result_af = (double)(end - start)/(double)CLOCKS_PER_SEC;   
     //printf("%f\n",result_af);
