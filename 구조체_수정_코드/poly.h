@@ -18,8 +18,8 @@
 #define FALSE 1
 
 #define COUNT_TABLE 1   // table 참조 횟수를 세고싶으면 1로 설정 아니면 0으로 설정 
-                        //속도 측정시에는 반드시 0으로 설정할 것
-#define COUNT_XOR 1                        
+#define COUNT_XOR 1     // XOR 횟수를 세고싶으면 1로 설정 아니면 0으로 설정                   
+//속도 측정시에는 COUNT_TABLE, COUNT_XOR 모두 반드시 0으로 설정할 것
 long long Ttable_cnt, InvTtable_cnt, Xtable_cnt, Fttable_cnt, XOR_cnt;
 
 #define IN
