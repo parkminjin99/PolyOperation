@@ -177,10 +177,192 @@ void test_xsqrt(int fttable[], int Ttable[], POLY Xtable[], CTX* ctx)
         printf("FALSE\n");
 }
 
+void set_Ri_table(POLY Ri[], POLY Xtable[], int fttable[], int Ttable[], CTX* ctx)
+{
+    POLY S;
+    //printf("R[i]============\n");
+    for(int i=0;i<t/2;i++)
+    {
+        POLY_init(&S,0);
+        S.coef[2*i+1] = 1;
+        S.max_degree = 2*i+1;
+        X_sqrt(&Ri[i],Xtable,&S,fttable, Ttable, ctx);
+        //POLY_print(&Ri[i]);
+    }
+}
+
+void veri_alg1_alg2(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[], int InvTtable[], CTX* ctx)
+{
+    /* algorithm 1 검증 */
+    printf("\n========= Algorithm1 veri ===========\n");
+    POLY Qx_al1,Qx_al1_ver;
+    POLY_init(&Qx_al1,0);
+    POLY_init(&Qx_al1_ver,0);
+
+    X_sqrt(&Qx_al1, Xtable, Qx, fttable, Ttable, ctx);
+
+    POLY_mul(&Qx_al1_ver,&Qx_al1,&Qx_al1,ctx,fttable,Xtable);
+    if(POLY_equal(Qx, &Qx_al1_ver)== TRUE)
+        printf("TRUE\n");
+    else
+        printf("FALSE\n");
+
+    printf("\n========= Algorithm2 veri ===========\n");
+    POLY Qx_al2,Qx_al2_ver;
+    POLY Qx_odd;
+    POLY_init(&Qx_al2,0); 
+    POLY_init(&Qx_al2_ver,0);
+
+    for(int i=0;i<=(t-1)/2;i++)
+        Qx_al2.coef[i] = InvTtable[Qx->coef[2*i]];
+    for(int i=0;i<=(t/2)-1;i++)
+    {
+        POLY_init(&Qx_odd,0);
+        MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx->coef[2*i+1]],fttable,ctx);
+        POLY_add_zzx(&Qx_al2,&Qx_odd);
+    }
+
+    POLY_mul(&Qx_al2_ver,&Qx_al2,&Qx_al2,ctx,fttable,Xtable);
+    if(POLY_equal(Qx, &Qx_al2_ver)== TRUE)
+        printf("TRUE\n");
+    else
+        printf("FALSE\n");
+}
+
+void speed_alg1_alg2(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[], int InvTtable[], CTX* ctx)
+{
+    printf("\n========= Algorithm Speed ===========\n");
+    POLY Qx_al1, Qx_al2, Qx_odd;
+    POLY_init(&Qx_al1,0);   POLY_init(&Qx_al2,0);
+    clock_t start, end; 
+    double result_ac, result_af;
+    /* algorithm 1 속도 측정 */ 
+    start = clock();
+    for(int i = 0; i < MAX_COUNT; i++)
+        X_sqrt(&Qx_al1, Xtable, Qx, fttable, Ttable, ctx);
+    end = clock();
+    result_ac = (double)(end - start)/(double)CLOCKS_PER_SEC;
+
+
+    /* algorithm2 속도 측정 */
+    start = clock();
+    for (int j = 0; j < MAX_COUNT; j++)
+    {
+        for(int i=0;i<=(t-1)/2;i++)
+            Qx_al2.coef[i] = InvTtable[Qx->coef[2*i]];
+        for(int i=0;i<=(t/2)-1;i++)
+        {
+            POLY_init(&Qx_odd,0);
+            MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx->coef[2*i+1]],fttable,ctx);
+            POLY_add_zzx(&Qx_al2,&Qx_odd);
+        }
+    }
+    end = clock();
+    result_af = (double)(end - start)/(double)CLOCKS_PER_SEC;   
+    printf("[al1 | al2] %f %f\n", result_ac/MAX_COUNT, result_af/MAX_COUNT);
+}
+
+void rand_POLY(POLY* dst)
+{
+    dst->max_degree = 0;
+    for (int i = t-1; i >= 0; i--)
+    {
+        dst->coef[i] = rand()%MAX_COEF_POLY_VALUE;
+        if(dst->coef[i] != 0)   dst->max_degree = MAX(i,dst->max_degree);
+    }
+    
+}
+
+void count_table(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[], int InvTtable[], CTX* ctx)
+{
+    POLY Qx_al1, Qx_al2, Qx_odd;
+    POLY_init(&Qx_al1,0);   POLY_init(&Qx_al2,0);
+    long long Ttable_cnt_temp, InvTtable_cnt_temp, Xtable_cnt_temp, Fttable_cnt_temp;
+
+    /* algorithm 1의 테이블 참조 횟수 측정 */ 
+    printf("\n========= Algorithm1 CountTable ===========\n");
+    Ttable_cnt_temp = Ttable_cnt;       InvTtable_cnt_temp = InvTtable_cnt;
+    Xtable_cnt_temp = Xtable_cnt;       Fttable_cnt_temp = Fttable_cnt;
+    for(int i = 0; i < MAX_COUNT; i++)
+    {
+        rand_POLY(Qx);
+        X_sqrt(&Qx_al1, Xtable, Qx, fttable, Ttable, ctx);
+    }
+    printf("[Ttable] %lld\n", (Ttable_cnt-Ttable_cnt_temp)/MAX_COUNT);
+    printf("[InvTtable] %lld\n", (InvTtable_cnt-InvTtable_cnt_temp)/MAX_COUNT);
+    printf("[Xtable] %lld\n", (Xtable_cnt-Xtable_cnt_temp)/MAX_COUNT);
+    printf("[Fttable] %lld\n", (Fttable_cnt-Fttable_cnt_temp)/MAX_COUNT);
+
+    /* algorithm 2의 테이블 참조 횟수 측정 */ 
+    printf("\n========= Algorithm2 CountTable ===========\n");
+    Ttable_cnt_temp = Ttable_cnt;       InvTtable_cnt_temp = InvTtable_cnt;
+    Xtable_cnt_temp = Xtable_cnt;       Fttable_cnt_temp = Fttable_cnt;
+    for (int j = 0; j < MAX_COUNT; j++)
+    {
+        rand_POLY(Qx);
+        for(int i=0;i<=(t-1)/2;i++)
+        {
+            Qx_al2.coef[i] = InvTtable[Qx->coef[2*i]];
+#if COUNT_TABLE == 1
+            InvTtable_cnt++;
+#endif
+        }
+        for(int i=0;i<=(t/2)-1;i++)
+        {
+            POLY_init(&Qx_odd,0);
+            MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx->coef[2*i+1]],fttable,ctx);
+#if COUNT_TABLE == 1
+            InvTtable_cnt++;
+#endif
+            POLY_add_zzx(&Qx_al2,&Qx_odd);
+        }
+    }
+    printf("[Ttable] %lld\n", (Ttable_cnt-Ttable_cnt_temp)/MAX_COUNT);
+    printf("[InvTtable] %lld\n", (InvTtable_cnt-InvTtable_cnt_temp)/MAX_COUNT);
+    printf("[Xtable] %lld\n", (Xtable_cnt-Xtable_cnt_temp)/MAX_COUNT);
+    printf("[Fttable] %lld\n", (Fttable_cnt-Fttable_cnt_temp)/MAX_COUNT);
+}
+
+void count_xor(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[], int InvTtable[], CTX* ctx)
+{
+    POLY Qx_al1, Qx_al2, Qx_odd;
+    POLY_init(&Qx_al1,0);   POLY_init(&Qx_al2,0);
+    long long XOR_cnt_temp;
+
+    /* algorithm 1의 XOR 횟수 측정 */ 
+    printf("\n========= Algorithm1 CountXOR ===========\n");
+    XOR_cnt_temp = XOR_cnt;
+    for(int i = 0; i < MAX_COUNT; i++)
+    {
+        rand_POLY(Qx);
+        X_sqrt(&Qx_al1, Xtable, Qx, fttable, Ttable, ctx);
+    }
+    printf("[XOR] %lld\n", (XOR_cnt-XOR_cnt_temp)/MAX_COUNT);
+
+    /* algorithm 2의 테이블 참조 횟수 측정 */ 
+    printf("\n========= Algorithm2 CountXOR ===========\n");
+    XOR_cnt_temp = XOR_cnt;
+    for (int j = 0; j < MAX_COUNT; j++)
+    {
+        rand_POLY(Qx);
+        for(int i=0;i<=(t-1)/2;i++)
+            Qx_al2.coef[i] = InvTtable[Qx->coef[2*i]];
+        for(int i=0;i<=(t/2)-1;i++)
+        {
+            POLY_init(&Qx_odd,0);
+            MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx->coef[2*i+1]],fttable,ctx);
+            POLY_add_zzx(&Qx_al2,&Qx_odd);
+        }
+    }
+    printf("[XOR] %lld\n", (XOR_cnt-XOR_cnt_temp)/MAX_COUNT);
+}
+
+
 int main()
 {
+    srand(time(NULL));
     test_poly();
-
+    
     CTX ctx;
     set_CTX(&ctx);
 
@@ -195,97 +377,38 @@ int main()
     test_gen_Xtable(Xtable, &ctx, fttable);
 
     
-    test_poly_add();
-    test_coef_poly_mul(fttable, &ctx);
-    test_poly_mul(Xtable, fttable, &ctx);
-    test_scalar_mul(fttable, &ctx);
-    test_xsqrt(fttable, Ttable, Xtable, &ctx);
+    // test_poly_add();
+    // test_coef_poly_mul(fttable, &ctx);
+    // test_poly_mul(Xtable, fttable, &ctx);
+    // test_scalar_mul(fttable, &ctx);
+    // test_xsqrt(fttable, Ttable, Xtable, &ctx);
 
-    //==============기본 끝 =====================
+    //============== 기본 끝 =====================
     //==Ri
-    clock_t start, end; 
-    double result_ac, result_af;
+    /*  Ri테이블 생성  */
+    POLY Ri[t/2];
+    set_Ri_table(Ri, Xtable, fttable, Ttable, &ctx); 
 
-    POLY Ri[t/2];   //   Ri테이블 생성 
-    POLY S;
-    //printf("R[i]============\n");
-    for(int i=0;i<t/2;i++)
-    {
-        POLY_init(&S,0);
-        S.coef[2*i+1] = 1;
-        S.max_degree = 2*i+1;
-        X_sqrt(&Ri[i],Xtable,&S,fttable, Ttable,&ctx);
-        //POLY_print(&Ri[i]);
-    }
-
-    //==== algorithm 1==
-    printf("\n========= Algorithm1 ===========\n");
-    POLY Qx ,Qx_al1,Qx_al1_ver;
+    /* Qx 생성 */
+    POLY Qx;        
     int qq[t-1+1] = {0b0, 0b0, 0b0, 0b10000001,};
     for(int i = 0; i < t; i++)
-    {
         for(int j = 0; j < 4; j++)
-        {
             qq[i] ^= 1 << j;
-        }
-    }
     POLY_init(&Qx, 0); 
-    POLY_init(&Qx_al1,0); 
-    POLY_init(&Qx_al1_ver,0);
     POLY_set(&Qx, qq, t-1);
 
-    start = clock();
-    X_sqrt(&Qx_al1, Xtable, &Qx, fttable, Ttable, &ctx);
-    end = clock();
-    result_ac = (double)(end - start)/(double)CLOCKS_PER_SEC;
-    //printf("%f\n",result_ac);
-    //printf("Qx="); POLY_print(&Qx); 
-    //printf("Qx_result="); POLY_print(&Qx_al1); 
-    POLY_mul(&Qx_al1_ver,&Qx_al1,&Qx_al1,&ctx,fttable,Xtable);
-    //printf("Qx_ver="); POLY_print(&Qx_al1_ver);
-    if(POLY_equal(&Qx, &Qx_al1_ver)== TRUE)
-        printf("TRUE\n");
-    else
-        printf("FALSE\n");
-
-    printf("\n========= Algorithm2 ===========\n");
-    POLY Qx_al2,Qx_al2_ver;
-    POLY Qx_odd;
-    POLY_init(&Qx_al2,0); 
-    POLY_init(&Qx_al2_ver,0);
-
-    start = clock();
-    for(int i=0;i<=(t-1)/2;i++)
-    {
-        Qx_al2.coef[i] = InvTtable[Qx.coef[2*i]];
-    }
-
-    for(int i=0;i<=(t/2)-1;i++)
-    {
-        POLY_init(&Qx_odd,0);
-        //tmp = Qx.coef[2*i+1];
-        //printf("\nri="); POLY_print(&Ri[i]);
-        //COEF_POLY_print(Qx.coef[2*i+1]);
-        MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx.coef[2*i+1]],fttable,&ctx);
-        //printf("Qxodd="); POLY_print(&Qx_odd);
-        POLY_add_zzx(&Qx_al2,&Qx_odd);
-    }
-    //printf("Qx_Al2="); POLY_print(&Qx_al2);
-
-    end = clock();
-    result_af = (double)(end - start)/(double)CLOCKS_PER_SEC;   
-    //printf("%f\n",result_af);
-
-    //printf("Qx_result="); POLY_print(&Qx_al2); 
-    POLY_mul(&Qx_al2_ver,&Qx_al2,&Qx_al2,&ctx,fttable,Xtable);
-    //printf("Qx_ver="); POLY_print(&Qx_al2_ver); 
-
-    if(POLY_equal(&Qx, &Qx_al2_ver)== TRUE)
-        printf("TRUE\n");
-    else
-        printf("FALSE\n");
+    /* 알고리듬1 & 알고리듬 2 검증  -> TRUE 출력되는지 확인 */
+    veri_alg1_alg2(&Qx, Ri, Xtable, fttable, Ttable, InvTtable, &ctx);
     
-    printf("[al1 | al2] %f %f\n", result_ac, result_af);
+    /* 알고리듬1 & 알고리듬 2 속도 측정 */
+    //speed_alg1_alg2(&Qx, Ri, Xtable, fttable, Ttable, InvTtable, &ctx);
+
+    /* 알고리듬1 & 알고리듬 2 테이블 참조 횟수 측정 */
+    count_table(&Qx, Ri, Xtable, fttable, Ttable, InvTtable, &ctx);
+    
+    /* 알고리듬1 & 알고리듬 2 XOR 횟수 측정 */
+    count_xor(&Qx, Ri, Xtable, fttable, Ttable, InvTtable, &ctx);
 
     return 0;
 }

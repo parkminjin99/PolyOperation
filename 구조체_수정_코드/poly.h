@@ -9,14 +9,26 @@
 
 #define MAX_COEF_POLY_DEGREE 2 * m + 1
 #define MAX_POLY_DEGREE 2 * t + 1
+#define MAX_COEF_POLY_VALUE  (1 << m)-1
+
+#define MAX(x,y)( (x)>(y)?(x):(y) ) 
+#define get_j_th_bit(x,j) ((x>>j)&0x1)
 
 #define TRUE 0
 #define FALSE 1
 
+#define COUNT_TABLE 1   // table 참조 횟수를 세고싶으면 1로 설정 아니면 0으로 설정 
+                        //속도 측정시에는 반드시 0으로 설정할 것
+#define COUNT_XOR 1                        
+long long Ttable_cnt, InvTtable_cnt, Xtable_cnt, Fttable_cnt, XOR_cnt;
+
 #define IN
 #define OUT
 
+#define MAX_COUNT 1000
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <memory.h>
 #include <math.h>
 #include "time.h"

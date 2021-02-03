@@ -1,6 +1,4 @@
 #include "poly.h"
-#define MAX(x,y)( (x)>(y)?(x):(y) ) 
-#define get_j_th_bit(x,j) ((x>>j)&0x1)
 
 //======================================================================
 //
@@ -319,6 +317,9 @@ void COEF_POLY_mod_ft(OUT IN int* dst, IN CTX* ctx, IN int fttable[])
         {
             *dst = *dst & (~(1<<i));
             *dst ^= fttable[i-m];   //COEF_POLY_add_zzx(dst, &fttable[i-m]);
+#if COUNT_TABLE == 1 
+            Fttable_cnt++;
+#endif
         }
     }
 }
@@ -334,15 +335,12 @@ void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[], IN int ft_tabl
         {
             POLY_init(&temp, 0);
             MULscalar(&temp, &Xtable[i-t], dst->coef[i], ft_table, ctx);
+#if COUNT_TABLE == 1  
+            Xtable_cnt++;
+#endif
             POLY_add_zzx(dst, &temp);
             dst->coef[i] = 0;
         }
-        // for(int j = 0; j <= Xtable[i-t].max_degree; j++) // mul scalar 대체 부분 나중에 구현되면 적용 예정
-        // {
-        //     if(Xtable[i-t].coef[j].coef[0] != 0)
-        //         COEF_POLY_add_zzx(&dst->coef[j], &dst->coef[i]);
-        // }
-        // COEF_POLY_init(&dst->coef[i], 0);
     }
     set_POLY_degree(dst); // dst poly 차수 정하는 부분
 }
@@ -356,7 +354,12 @@ void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src, IN int fttable[], 
     {
         POLY_init(&tmp,0);
         for(int i=x_sqrt->max_degree;i>=0;i--)
+        {
             tmp.coef[2*i] = Ttable[x_sqrt->coef[i]];
+#if COUNT_TABLE == 1
+            Ttable_cnt++;
+#endif
+        }
         tmp.max_degree = 2 * x_sqrt->max_degree;
         POLY_mod_gx(&tmp,ctx,Xtable, fttable);
         POLY_copy(x_sqrt,&tmp);
@@ -376,7 +379,13 @@ void COEF_POLY_mul(OUT int* dst, IN int src1, IN int src2, IN int ft_table[], IN
     for(int i = 0; i <= MAX_COEF_POLY_DEGREE; i++)
     {
         if(get_j_th_bit(src1,i) == 0)   continue;
-        else    *dst ^= src2<<i;
+        else    
+        {
+            *dst ^= src2<<i;
+#if COUNT_XOR == 1
+            XOR_cnt++;
+#endif
+        }
     }
     COEF_POLY_mod_ft(dst, ctx, ft_table);
 }
@@ -424,6 +433,9 @@ void POLY_add_zzx(OUT POLY* dst, IN POLY* src) // t차 이상의 다항식은 안들어온다
     for (int i = 0; i < t; i++)
     {
         dst->coef[i] ^= src->coef[i];   //COEF_POLY_add_zzx(&dst->coef[i], &src->coef[i]);
+#if COUNT_XOR == 1
+            XOR_cnt++;
+#endif
         if(dst->coef[i] != 0)     dst->max_degree = i;  
     }
 }
@@ -435,6 +447,9 @@ void POLY_add(OUT POLY* dst, IN POLY* src1, IN POLY* src2)
     for (int i = 0; i <= max_deg; i++)
     {
         dst->coef[i] = src1->coef[i] ^ src2->coef[i]; // COEF_POLY_add(&dst->coef[i], &src1->coef[i], &src2->coef[i]);
+#if COUNT_XOR == 1
+            XOR_cnt++;
+#endif
         if(dst->coef[i] != 0)     dst->max_degree = i;  
     }
 }
