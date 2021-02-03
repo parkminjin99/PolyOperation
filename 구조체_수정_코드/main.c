@@ -212,11 +212,9 @@ int main()
     for(int i=0;i<t/2;i++)
     {
         POLY_init(&S,0);
-        //POLY_init(&S_sqrt,0);
         S.coef[2*i+1] = 1;
         S.max_degree = 2*i+1;
         X_sqrt(&Ri[i],Xtable,&S,fttable, Ttable,&ctx);
-        //POLY_copy(&Ri[i],&S_sqrt);
         //POLY_print(&Ri[i]);
     }
 
@@ -224,13 +222,13 @@ int main()
     printf("\n========= Algorithm1 ===========\n");
     POLY Qx ,Qx_al1,Qx_al1_ver;
     int qq[t-1+1] = {0b0, 0b0, 0b0, 0b10000001,};
-    // for(int i = 0; i < t; i++)
-    // {
-    //     for(int j = 0; j < 4; j++)
-    //     {
-    //         qq[i] ^= 1 << j;
-    //     }
-    // }
+    for(int i = 0; i < t; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            qq[i] ^= 1 << j;
+        }
+    }
     POLY_init(&Qx, 0); 
     POLY_init(&Qx_al1,0); 
     POLY_init(&Qx_al1_ver,0);
@@ -241,7 +239,7 @@ int main()
     end = clock();
     result_ac = (double)(end - start)/(double)CLOCKS_PER_SEC;
     //printf("%f\n",result_ac);
-    printf("Qx="); POLY_print(&Qx); 
+    //printf("Qx="); POLY_print(&Qx); 
     //printf("Qx_result="); POLY_print(&Qx_al1); 
     POLY_mul(&Qx_al1_ver,&Qx_al1,&Qx_al1,&ctx,fttable,Xtable);
     //printf("Qx_ver="); POLY_print(&Qx_al1_ver);
@@ -280,11 +278,7 @@ int main()
 
     //printf("Qx_result="); POLY_print(&Qx_al2); 
     POLY_mul(&Qx_al2_ver,&Qx_al2,&Qx_al2,&ctx,fttable,Xtable);
-    printf("Qx_ver="); POLY_print(&Qx_al2_ver); 
-    if(POLY_equal(&Qx_al1, &Qx_al2)== TRUE)
-        printf("TRUE\n");
-    else
-        printf("FALSE\n");
+    //printf("Qx_ver="); POLY_print(&Qx_al2_ver); 
 
     if(POLY_equal(&Qx, &Qx_al2_ver)== TRUE)
         printf("TRUE\n");

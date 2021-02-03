@@ -349,48 +349,18 @@ void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[], IN int ft_tabl
 
 void X_sqrt(OUT POLY* x_sqrt, IN POLY Xtable[], IN POLY* src, IN int fttable[], IN int* Ttable, IN CTX* ctx)
 {  //x^i
-    POLY tmp,aaa;
-    POLY x;
-
-    POLY_init(&x,0);
-    POLY_copy(&x,src);
-    //POLY_print(&x);
+    POLY tmp;
+    POLY_init(x_sqrt,0);
+    POLY_copy(x_sqrt,src);
     for(int count=0;count<m*t-1;count++)
     {
         POLY_init(&tmp,0);
-        for(int i=x.max_degree;i>=0;i--)
-        {
-            tmp.coef[2*i] = Ttable[x.coef[i]];
-        }
-        // tmp.max_degree = 0;
-        // for(int i = MAX_POLY_DEGREE; i >= 0; i--)
-        // {
-        //     if(COEF_is_zero(&tmp.coef[i]) != TRUE)
-        //     {
-        //         tmp.max_degree = i;
-        //         break;
-        //     }
-        // }
-        //printf("tmp = ");   POLY_print(&tmp);
-        tmp.max_degree = 2 * x.max_degree;
+        for(int i=x_sqrt->max_degree;i>=0;i--)
+            tmp.coef[2*i] = Ttable[x_sqrt->coef[i]];
+        tmp.max_degree = 2 * x_sqrt->max_degree;
         POLY_mod_gx(&tmp,ctx,Xtable, fttable);
-        // tmp.max_degree = 2 * x.max_degree;
-        // for(int i=tmp.max_degree;i>=t;i=i-2)
-        // {
-        //     POLY_init(&aaa,0);
-        //     if(COEF_is_zero(&tmp.coef[i])==FALSE)
-        //     {
-        //         MULscalar(&aaa,&Xtable[i-t],&tmp.coef[i],fttable,ctx);
-        //         for(int j=0;j<tmp.coef[i].coef_max_degree+1;j++)
-        //             tmp.coef[i].coef[j]=0; // 일단 i 0으로
-        //         POLY_add_zzx(&tmp,&aaa); 
-        //     }
-        // //printf("a^2 mod g = "); COEF_POLY_print(&tmp); printf("\n");
-        // }
-       //POLY_print(&tmp); printf("\n");
-        POLY_copy(&x,&tmp);
+        POLY_copy(x_sqrt,&tmp);
     }
-    POLY_copy(x_sqrt,&x);
 }
 
 
