@@ -4,12 +4,12 @@
 /*  
     (m,t) = (12,64), (13,96), (13,119), (13,128)
 */
-#define m 12
-#define t 64
+#define m 13
+#define t 119
 
-#define MAX_COEF_POLY_DEGREE 2 * m + 1
-#define MAX_POLY_DEGREE 2 * t + 1
-#define MAX_COEF_POLY_VALUE  (1 << m)-1
+#define MAX_COEF_POLY_DEGREE (2 * m + 1)
+#define MAX_POLY_DEGREE (2 * t + 1)
+#define MAX_COEF_POLY_VALUE  ((1 << m)-1)
 
 #define MAX(x,y)( (x)>(y)?(x):(y) ) 
 #define get_j_th_bit(x,j) ((x>>j)&0x1)
@@ -18,9 +18,9 @@
 #define FALSE 1
 
 #define COUNT_TABLE 1   // table 참조 횟수를 세고싶으면 1로 설정 아니면 0으로 설정 
-#define COUNT_XOR 1     // XOR 횟수를 세고싶으면 1로 설정 아니면 0으로 설정                   
+#define COUNT_XOR 1   // XOR 횟수를 세고싶으면 1로 설정 아니면 0으로 설정                   
 //속도 측정시에는 COUNT_TABLE, COUNT_XOR 모두 반드시 0으로 설정할 것
-long long Ttable_cnt, InvTtable_cnt, Xtable_cnt, Fttable_cnt, XOR_cnt;
+long long Ttable_cnt, InvTtable_cnt, Xtable_cnt, Fttable_cnt, XOR_cnt, Ritable_cnt;
 
 #define IN
 #define OUT

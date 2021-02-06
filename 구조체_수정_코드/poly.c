@@ -336,7 +336,7 @@ void POLY_mod_gx(OUT IN POLY* dst, IN CTX* ctx, IN POLY Xtable[], IN int ft_tabl
             POLY_init(&temp, 0);
             MULscalar(&temp, &Xtable[i-t], dst->coef[i], ft_table, ctx);
 #if COUNT_TABLE == 1  
-            Xtable_cnt++;
+            Xtable_cnt+=Xtable[i-t].max_degree;
 #endif
             POLY_add_zzx(dst, &temp);
             dst->coef[i] = 0;

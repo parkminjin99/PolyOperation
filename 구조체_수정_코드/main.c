@@ -40,15 +40,58 @@ void set_CTX(CTX* ctx)
     ctx_set(ctx, ft, gx, t);
 #elif t == 96
     int gx[t+1] = {0,};
-    gx[0]=1; gx[1]=1; gx[2]=1; gx[3]=1; gx[5]=1; gx[6]=1; gx[96]=1;
+    gx[0]=0b1101111101; 
+    gx[1]=0b1111101010001; 
+    gx[2]=0b11111001; 
+    gx[3]=0b1111101010111;
+    gx[4]=0b11010100111; 
+    gx[96]=1; 
     ctx_set(ctx, ft, gx, t);
 #elif t == 119
     int gx[t+1] = {0,};
-    gx[0]=1; gx[8]=1; gx[119]=1;
+    // gx[0]=0b1011000011101;
+    // gx[1]=0b111001101110;
+    // gx[2]=0b110010001;
+    // gx[3]=0b1111010001000;
+    // gx[4]=0b1000101011010;
+    // gx[5]=0b100110010011;
+    // gx[6]=0b100101110111;
+    // gx[7]=0b10010111;
+    // gx[8]=0b1001101111000;
+    // gx[119]=1;
+    gx[0]=0b1001000110111;
+    gx[1]=0b1110100000000;
+    gx[2]=0b1100110011100;
+    gx[3]=0b10011000011;
+    gx[4]=0b1000010100000;
+    gx[5]=0b1010100111010;
+    gx[119]=1;
     ctx_set(ctx, ft, gx, t);
 #elif t == 128
     int gx[t+1] = {0,};
-    gx[0]=1; gx[1]=1; gx[2]=1; gx[7]=1; gx[128]=1;
+    gx[0] = 0b1011001000111;
+    gx[1] = 0b1010100011000;
+    gx[2] = 0b1100101010011;
+    gx[3] = 0b1100000011111;
+    gx[4] = 0b1010000111110;
+    gx[5] = 0b1110111100000;
+    gx[6] = 0b1111000100010;
+    gx[7] = 0b101101010101;
+    gx[8] = 0b1010111010010;
+    gx[9] = 0b1010100100100;
+    gx[10]= 0b1100110101100;
+    gx[11]= 0b1101110110001;
+    gx[12]= 0b1010000100111;
+    gx[13]=0b1011100111111;
+    gx[128]=1;
+    // gx[0] = 0b1000011010001;
+    // gx[1] = 0b11110010111;
+    // gx[2] = 0b1101000101101;
+    // gx[3] = 0b1011000101100;
+    // gx[4] = 0b1010111110110;
+    // gx[5] = 0b11011110010;
+    // gx[6] = 0b11011000110;
+    // gx[128] = 1;
     ctx_set(ctx, ft, gx, t);
 #endif
 
@@ -277,7 +320,7 @@ void count_table(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[]
 {
     POLY Qx_al1, Qx_al2, Qx_odd;
     POLY_init(&Qx_al1,0);   POLY_init(&Qx_al2,0);
-    long long Ttable_cnt_temp, InvTtable_cnt_temp, Xtable_cnt_temp, Fttable_cnt_temp;
+    long long Ttable_cnt_temp, InvTtable_cnt_temp, Xtable_cnt_temp, Fttable_cnt_temp, Ritable_cnt_temp;
 
     /* algorithm 1의 테이블 참조 횟수 측정 */ 
     printf("\n========= Algorithm1 CountTable ===========\n");
@@ -297,6 +340,7 @@ void count_table(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[]
     printf("\n========= Algorithm2 CountTable ===========\n");
     Ttable_cnt_temp = Ttable_cnt;       InvTtable_cnt_temp = InvTtable_cnt;
     Xtable_cnt_temp = Xtable_cnt;       Fttable_cnt_temp = Fttable_cnt;
+    Ritable_cnt_temp = Ritable_cnt;
     for (int j = 0; j < MAX_COUNT; j++)
     {
         rand_POLY(Qx);
@@ -313,6 +357,7 @@ void count_table(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[]
             MULscalar(&Qx_odd,&Ri[i],InvTtable[Qx->coef[2*i+1]],fttable,ctx);
 #if COUNT_TABLE == 1
             InvTtable_cnt++;
+            Ritable_cnt++;
 #endif
             POLY_add_zzx(&Qx_al2,&Qx_odd);
         }
@@ -320,6 +365,7 @@ void count_table(POLY* Qx, POLY Ri[], POLY Xtable[], int fttable[], int Ttable[]
     printf("[Ttable] %lld\n", (Ttable_cnt-Ttable_cnt_temp)/MAX_COUNT);
     printf("[InvTtable] %lld\n", (InvTtable_cnt-InvTtable_cnt_temp)/MAX_COUNT);
     printf("[Xtable] %lld\n", (Xtable_cnt-Xtable_cnt_temp)/MAX_COUNT);
+    printf("[Ritable] %lld\n", (Ritable_cnt-Ritable_cnt_temp)/MAX_COUNT);
     printf("[Fttable] %lld\n", (Fttable_cnt-Fttable_cnt_temp)/MAX_COUNT);
 }
 
@@ -369,8 +415,8 @@ int main()
     int fttable[m+1];
     test_gen_fttable(fttable, &ctx);
 
-    int Ttable[8192]={0,};
-    int InvTtable[8192]={0,};
+    int Ttable[(1<<13)]={0,};
+    int InvTtable[(1<<13)]={0,};
     test_gen_Ttable(Ttable, InvTtable, fttable, &ctx);
     
     POLY Xtable[t+1];
